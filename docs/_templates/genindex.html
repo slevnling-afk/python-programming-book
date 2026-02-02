@@ -1,0 +1,74 @@
+{#
+    自定义 genindex 模板（覆盖 Sphinx basic/genindex.html）
+
+    目的：中文索引按“首字符”分组会出现大量单字分组标题（如“变/多/交…”），观感较差
+    这里改为：不显示分组标题与跳转条，直接输出一个扁平索引列表
+#}
+{%- extends "layout.html" %}
+{% set title = _('Index') %}
+
+{% macro indexentries(firstname, links) %}
+  {%- if links -%}
+    <a href="{{ links[0][1] }}">
+    {%- if links[0][0] %}<strong>{% endif -%}
+    {{ firstname|e }}
+    {%- if links[0][0] %}</strong>{% endif -%}
+    </a>
+
+    {%- for ismain, link in links[1:] -%}
+      , <a href="{{ link }}">{% if ismain %}<strong>{% endif -%}
+      [{{ loop.index }}]
+      {%- if ismain %}</strong>{% endif -%}
+      </a>
+    {%- endfor %}
+  {%- else %}
+    {{ firstname|e }}
+  {%- endif %}
+{% endmacro %}
+
+{% block body %}
+
+<h1 id="index">{{ _('Index') }}</h1>
+
+{# genindexentries = [(key, entries), ...]，entries 为条目列表；这里把所有 key 的条目扁平化 #}
+{% set ns = namespace(all=[]) %}
+{%- for key, entries in genindexentries %}
+  {%- for entry in entries %}
+    {% set ns.all = ns.all + [entry] %}
+  {%- endfor %}
+{%- endfor %}
+
+<div class="genindex">
+<table style="width: 100%" class="indextable genindextable"><tr>
+  {%- for column in ns.all|slice_index(3) if column %}
+  <td style="width: 33%; vertical-align: top;"><ul>
+    {%- for entryname, (links, subitems, _) in column %}
+      <li>{{ indexentries(entryname, links) }}
+      {%- if subitems %}
+      <ul>
+      {%- for subentryname, subentrylinks in subitems %}
+        <li>{{ indexentries(subentryname, subentrylinks) }}</li>
+      {%- endfor %}
+      </ul>
+      {%- endif -%}</li>
+    {%- endfor %}
+  </ul></td>
+  {%- endfor %}
+</tr></table>
+</div>
+
+{% endblock %}
+
+{% block sidebarrel %}
+{% if split_index %}
+   <h4>{{ _('Index') }}</h4>
+   <p>{% for key, dummy in genindexentries -%}
+   <a href="{{ pathto('genindex-' + key) }}"><strong>{{ key }}</strong></a>
+     {% if not loop.last %}| {% endif %}
+   {%- endfor %}</p>
+
+   <p><a href="{{ pathto('genindex-all') }}"><strong>{{ _('Full index on one page') }}</strong></a></p>
+{% endif %}
+   {{ super() }}
+{% endblock %}
+

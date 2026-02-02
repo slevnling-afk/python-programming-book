@@ -1,0 +1,42 @@
+
+/* 自定义样式：你可以在这里微调代码块、标题间距等 */
+
+div.highlight pre {
+  line-height: 1.35;
+  font-size: 0.95em;
+}
+
+/* 让 dropdown 的标题更醒目一点 */
+.sd-dropdown > .sd-card-header {
+  font-weight: 600;
+}
+
+/* ---- GenIndex（索引页）样式优化：适配中文索引的“单字分组”观感 ---- */
+/* Sphinx 的 genindex 按“首字符”分组，中文会显示为单个汉字标题；这里把标题缩小并压缩间距 */
+div.genindex h2 {
+  font-size: 1.2rem;
+  margin: 1.2rem 0 0.4rem;
+  line-height: 1.1;
+}
+
+/* 顶部跳转条（A|B|变|…）更紧凑并自动换行 */
+div.genindex-jumpbox {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.6rem;
+  margin: 0.75rem 0 1rem;
+}
+div.genindex-jumpbox a {
+  padding: 0 0.15rem;
+  white-space: nowrap;
+}
+
+/* 索引表格更紧凑，减少“每组只有一个字”造成的大段空白 */
+table.genindextable td {
+  vertical-align: top;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+table.genindextable ul {
+  margin: 0.2rem 0 0.8rem;
+}

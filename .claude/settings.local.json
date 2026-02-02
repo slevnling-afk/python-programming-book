@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(test:*)",
+      "Bash(node --version:*)",
+      "Bash(npm:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(ipconfig:*)",
+      "Bash(sphinx-build:*)",
+      "Bash(\"../.venv/Scripts/python.exe\" -m sphinx -b html . _build/html)",
+      "Bash(python:*)",
+      "Bash(del add_indexes_ch03.py)",
+      "Bash(..venvScriptspython.exe -m sphinx:*)",
+      "Bash(\".venv/Scripts/python.exe\" -m sphinx -b html docs docs/_build/html)",
+      "Bash(del add_indexes_ch06.py add_indexes_ch06_v2.py add_indexes_ch06_v3.py check_titles.py)",
+      "Bash(make:*)",
+      "Bash(conda activate:*)",
+      "Bash(\"D:\\\\Programs\\\\anaconda3\\\\envs\\\\model6\\\\Scripts\\\\sphinx-build.exe\" -b html docs docs/_build/html)",
+      "Bash(\"/d/Programs/anaconda3/envs/model6/Scripts/sphinx-build.exe\" -b html docs docs/_build/html)",
+      "Bash(.venv/Scripts/python -m sphinx:*)",
+      "Bash(pm2 start:*)",
+      "Bash(pm2 logs:*)",
+      "Bash(taskkill:*)",
+      "Bash(cmd /c \"taskkill /PID 9600 /F\")",
+      "Bash(powershell -Command \"Stop-Process -Id 9600 -Force\")",
+      "Bash(pm2-startup:*)",
+      "Bash(pm2 save:*)",
+      "Bash(pm2 status:*)",
+      "Bash(powershell -Command \"New-NetFirewallRule -DisplayName ''Python Book HTTP Server'' -Direction Inbound -Protocol TCP -LocalPort 8080 -Action Allow\")",
+      "Bash(curl:*)",
+      "Bash(pm2 delete:*)",
+      "Bash(powershell -Command \"Get-NetConnectionProfile | Select-Object Name, InterfaceAlias, NetworkCategory\")",
+      "Bash(powershell -Command \"Get-Service -Name ''ZeroTierOneService'' | Select-Object Status, Name\")"
+    ]
+  }
+}
