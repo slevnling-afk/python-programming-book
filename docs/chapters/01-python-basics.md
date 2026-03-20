@@ -1090,7 +1090,7 @@ print(mission_id[-3:])    # 'A03'
 
 :::{admonition} 练习：字符串切片
 :class: important
-给定 `mission_id = "MIS-20251221-A03"`：切出任务前缀 `MIS`；切出日期 `20251221`；切出区域编号 `A03`；切出`21A3`。将四段结果分别打印输出。
+给定 `mission_id = "MIS-20251221-A03"`：切出任务前缀 `MIS`；切出日期 `20251221`；切出区域编号 `A03`；切出 `21A3`。将四段结果分别打印输出。
 :::
 
 ## 1.3.3 任务三：列表
@@ -1389,7 +1389,7 @@ alarms = ["LOW_BAT", "LOW_BAT", "RC_LOST", "GPS_WEAK", "RC_LOST"]
    - 日期片段（例如 `20251221`）
    - 区域编号（例如 `A03`）
      另外，从 `sensors` 取出第 1 个传感器，从 `alt_samples` 切出最近 3 次采样。
-3. **结构化组织（字典与取值）**创建一个字典 `mission`，把上述信息汇总（键用 snake_case）：`"mission_id"`、`"uav_id"`、`"pilot"`、`"battery_percent"`、`"altitude_m"`、`"is_armed"`、`"home_point"`、`"sensors"`、`"alt_samples"`、`"alarms"`然后用字典取值方式（如 `mission["battery_percent"]`）打印关键字段，体现“按键取值”。
+3. **结构化组织（字典与取值）**创建一个字典 `mission`，把上述信息汇总（键的命名风格采用用 snake_case），如 `"mission_id"`、`"uav_id"`、`"pilot"`、`"battery_percent"`、`"altitude_m"`、`"is_armed"`、`"home_point"`、`"sensors"`、`"alt_samples"`、`"alarms"`然后用字典取值方式（如 `mission["battery_percent"]`）打印关键字段，体现“按键取值”。
 4. **告警去重（集合）**把 `alarms` 转成集合 `unique_alarms`，输出“原始告警列表”和“去重后的告警集合”。
 5. **输出排版（换行 + 注释 + 缩进规范）**
 
