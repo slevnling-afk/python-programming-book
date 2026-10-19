@@ -137,7 +137,7 @@ export class DroneScene {
     const y = dy * cp - z * sp;
     const depth = this.distance - (dy * sp + z * cp);
     const scale = this.focal / Math.max(100, depth);
-    return { x: this.width * .5 + x * scale, y: this.heightPx * .46 - y * scale, depth, scale };
+    return { x: this.width * .5 + x * scale, y: this.heightPx * .54 - y * scale, depth, scale };
   }
 
   local(point) {
@@ -349,8 +349,9 @@ export class DroneScene {
     const active=mode==='flying';
     const spinning=active||mode==='called';
     const blend=reduced?1:1-Math.exp(-dt*6);
-    // Classroom metres become a bounded vertical lift, preserving the pad in view.
-    const lift=active ? 35 + 106 * (1-Math.exp(-this.state.height/23)) : 0;
+    // Bound lift and perspective together so combined 30-degree attitudes, complete
+    // propeller rings and the pad fit beneath the stage header on narrow screens.
+    const lift=active ? 20 + 50 * (1-Math.exp(-this.state.height/23)) : 0;
     const targetHeight=51+lift;
     this.height=mix(this.height,targetHeight,reduced?1:1-Math.exp(-dt*3.5));
     const targetPitch=(active?this.state.pitch:0)*Math.PI/180;
@@ -362,8 +363,8 @@ export class DroneScene {
     this.poseYaw+=yawDifference*blend;
     this.rotor+=reduced?0:dt*(active?43:spinning?21:0);
     this.accent=mode==='error'?'#ff7979':mode==='blocked'?'#ffc05e':mode==='landed'?'#91b9c7':COLORS.mint;
-    this.lookY=78;
-    this.focal=Math.min(w*.95,h*1.2)/(2*Math.tan(22.5*Math.PI/180));
+    this.lookY=115;
+    this.focal=Math.min(w*.95,h*.80)/(2*Math.tan(22.5*Math.PI/180));
     this.faces=[];
     this.ground(time);
     [[-111,-91],[111,-91],[-111,91],[111,91]].forEach(([x,z],i)=>this.arm(x,z,i,time));
