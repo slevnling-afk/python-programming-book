@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#142b40">
+<title>无人机函数飞行工坊 · 项目一</title>
+<meta name="description" content="定义、调用、返回。用55个Python代码填空，探索无人机的起飞条件和三轴姿态。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='9' fill='%23142b40'/%3E%3Ctext x='7' y='29' font-size='28' fill='%23ffb35c'%3Eƒ%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="../../../chapters/03-functions_modules.html#functions-project-one-lab"><span class="brand-icon">ƒ<span>↗</span></span><span>函数飞行工坊<small>FUNCTION FLIGHT WORKSHOP</small></span></a><div class="course-location"><span>模块 03</span><i>/</i> 项目 01 · 无人机任务工具箱</div><div class="top-actions"><span id="totalProgress">0 / 10 完成</span><button id="guideBtn" class="outline-button">操作指南 <span>?</span></button><a class="back-link" href="../../../chapters/03-functions_modules.html#functions-project-one-lab">返回教材 ↗</a></div></header>
+<main>
+<section class="intro"><div><p class="eyebrow">DEFINE → CALL → RETURN</p><h1>写下函数，<span>看见每一次执行。</span></h1><p class="intro-copy">左边补全 Python，右边观察无人机。让“定义、调用与返回值”从代码里动起来。</p></div><div class="module-badge"><b>3.1</b><span>函数的定义与调用<small>10 个关卡 / 55 处填空</small></span></div></section>
+<nav id="lessonNav" class="lesson-nav" aria-label="选择学习关卡"></nav>
+<div class="lab-grid">
+<section class="code-panel" aria-labelledby="lessonTitle">
+<div class="panel-cap"><span><i class="square-dot"></i> CODE WORKBENCH <em>编程工作台</em></span><span id="blankCount">0 / 0 空</span></div>
+<div class="lesson-intro"><div class="lesson-meta"><span id="lessonKicker"></span><span id="lessonNumber"></span></div><h2 id="lessonTitle"></h2><p id="lessonDescription"></p></div>
+<div class="scenario-row"><label for="scenarioSelect">测试情境</label><select id="scenarioSelect"></select><button id="dataBtn" class="text-button" aria-expanded="false">查看输入 ⌄</button></div>
+<div id="dataBox" class="data-box" hidden><p id="scenarioDescription"></p><pre id="inputData"></pre></div>
+<div class="editor-tab"><span><i></i>uav_toolbox.py</span><label><input id="autoRun" type="checkbox" checked> 填空后自动预演</label></div>
+<div id="editor" class="editor" role="group" aria-label="Python代码填空"></div>
+<div class="editor-help"><kbd>Tab</kbd> 跳到下一空 <span>·</span> 预演时未填空暂用参考脚手架</div>
+<div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+<div id="hintBox" class="hint-box" hidden></div>
+<div class="code-actions"><button id="runBtn" class="run-button"><span>▶</span> 运行完整代码 <kbd>Ctrl ↵</kbd></button><button id="hintBtn" class="outline-button">给我提示</button><button id="resetBtn" class="reset-button" title="重置当前关卡" aria-label="重置当前关卡">↺</button><button id="answerBtn" class="text-button">参考答案</button></div>
+</section>
+<section class="flight-panel" aria-labelledby="flightTitle">
+<div class="panel-cap"><span><i class="square-dot orange"></i> FLIGHT OBSERVATORY <em id="flightTitle">姿态观察窗</em></span><span id="previewMode">等待输入</span></div>
+<div class="scene" id="sceneWrap"><div class="scene-top"><div><span class="tiny-label">TRAINING QUADCOPTER</span><h3 id="uavName">UAV–07 <small>SIM</small></h3></div><span id="flightBadge" class="flight-badge"><i></i>地面待命</span></div><canvas id="droneCanvas" role="img" aria-label="可拖动旋转的三维无人机，姿态跟随Python函数返回结果变化"></canvas><div class="scene-axis" aria-hidden="true"><span class="axis-z">↑ Z</span><span class="axis-x">↗ X</span><span class="axis-y">↖ Y</span></div><div class="scene-bottom"><span id="sceneCaption">定义工具，准备你的第一次调用。</span><button id="cameraBtn" title="恢复视角" aria-label="恢复模型视角">⤾</button></div><div class="scene-tip">拖动旋转 · 滚轮缩放</div></div>
+<div class="pose-grid"><div><span>俯仰 PITCH</span><strong id="pitchValue">0<em>°</em></strong><small>抬头 / 低头</small></div><div><span>横滚 ROLL</span><strong id="rollValue">0<em>°</em></strong><small>左右倾斜</small></div><div><span>航向 YAW</span><strong id="yawValue">0<em>°</em></strong><small>水平转向</small></div><div><span>高度 ALT</span><strong id="heightValue">0<em>m</em></strong><small>模型演示高度</small></div></div>
+<div class="execution"><div class="execution-title"><span>函数执行路径</span><span id="tracePosition">0 个执行事件</span></div><div class="execution-flow" id="executionFlow"><span data-step="define">定义</span><b>→</b><span data-step="call">调用</span><b>→</b><span data-step="enter">函数体</span><b>→</b><span data-step="return">return</span><b>→</b><span data-step="result">调用处</span></div><div class="scope-row"><div><span>当前函数</span><code id="functionValue">—</code></div><div><span>结果 / 返回值</span><code id="returnValue">—</code><small id="returnType"></small></div></div><p id="traceExplanation">只定义函数时，函数体不会执行。</p></div>
+<div class="console"><div class="console-top"><span><i></i>PYTHON OUTPUT <small id="consoleStatus">READY</small></span><div class="playback"><select id="speedSelect" aria-label="回放速度"><option value="1">1×</option><option value="2">2×</option><option value="0.5">0.5×</option></select><button id="pauseBtn" disabled title="暂停或继续执行回放">暂停</button><button id="replayBtn" disabled>↻ 重播</button></div></div><pre id="consoleOutput" role="log" aria-live="off"># 补全左侧任意一个空格，开始观察。
+# 未填写的空会在预演中使用参考脚手架。</pre></div>
+</section>
+</div>
+<section class="concept-bar"><span class="concept-symbol">↳</span><p id="conceptText"></p><button id="nextBtn">下一关 →</button></section>
+<footer><span>模块三 · 项目一 · Python 函数入门</span><span>模型是执行流程与返回数据的教学映射，不是实机飞控。</span><button id="downloadBtn" class="text-button">↓ 下载本关 Python</button></footer>
+</main>
+<dialog id="guideDialog"><div class="dialog-head"><div><p class="eyebrow">QUICK START</p><h2>从一处填空，到一次飞行</h2></div><button class="close-dialog" aria-label="关闭操作指南">×</button></div><ol class="guide-list"><li><b>选择关卡，补全代码。</b> 从 def、函数名和 return 开始，Tab 可切换空格。</li><li><b>填一空，自动预演。</b> 已填内容按实际代码运行，未填处暂用参考脚手架。全部填完后，可运行完整代码。</li><li><b>看路径，也看返回值。</b> 定义只创建工具；调用才执行函数体；返回值交回调用处。</li><li><b>到第 9 关，探索真实姿态变化。</b> 修改函数调用里的四个数字，元组解包后会改变模型的俯仰、横滚、航向和高度。</li><li><b>切换情境做对照。</b> 起飞条件不通过时模型留在地面。只打印通知，也不会自动起飞。</li></ol><div class="guide-note">姿态回放用于解释代码和数据。第 6、9 关是基于“数字返回值 / 多值返回”的课内迁移；第 7、10 关的高度来自日志回放。<br>在“参考答案”中可以填入代码演示；数值探索空支持其标注范围内的不同数值。</div><a href="https://skulpt.org/" target="_blank" rel="noopener" class="engine-credit">浏览器 Python 运行引擎 · Skulpt ↗</a></dialog>
+<dialog id="answerDialog"><div class="dialog-head"><div><p class="eyebrow">REFERENCE & REASONING</p><h2>对照答案，理解每一处作用</h2></div><button class="close-dialog" aria-label="关闭参考答案">×</button></div><p class="answer-intro">数值探索空可以填写不同的合法数值；参考答案只提供一个起点。</p><div id="answerContent"></div><div class="dialog-actions"><button id="fillAnswerBtn" class="run-button">填入参考答案并运行</button><button class="outline-button close-dialog">继续自己填写</button></div></dialog>
+<div id="toast" class="toast" hidden role="status"></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

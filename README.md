@@ -72,3 +72,11 @@ xelatex python_programming_book.tex
 - 自定义 CSS：`docs/_static/custom.css`
 
 祝写书顺利！
+
+## 模块三 · 项目一交互实训
+
+[进入无人机函数飞行工坊](https://slevnling-afk.github.io/python-programming-book/_static/labs/function-flight/index.html)。模块三项目一末尾也有入口。
+
+左侧 55 处 Python 填空，右侧三维无人机展示实际函数调用和返回数据。10 个关卡覆盖函数定义与调用、默认 `None`、布尔、数字、字符串及元组返回；姿态实验支持修改实参，改变模型俯仰、横滚、航向和高度。未填空在逐空预演中使用参考脚手架，全部填写后可完整运行。
+
+源码位于 `docs/_static/labs/function-flight/`，由现有 Sphinx 构建复制并发布。Python 浏览器运行库已随项目保存，不依赖外部 CDN。第三方许可见该目录的 `vendor/SKULPT-LICENSE.txt`。运行验证：`node tests/function-flight-runtime.cjs`。
