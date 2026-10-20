@@ -8,8 +8,13 @@ const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 const mix = (a, b, t) => a + (b - a) * t;
 const COLORS = {
   white: '#eff7f8', edge: '#b5cdd1', navy: '#203e4a', dark: '#102c39',
-  mint: '#ffbd62', mintDark: '#c78632', blue: '#557e91', lens: '#287d9b',
+  mint: '#ffae4f', mintDark: '#c78632', blue: '#557e91', lens: '#287d9b',
+  front: '#ffac47', rear: '#48dfed',
 };
+const VIEWS = {
+  iso: [-.64, .55], front: [0, .10], side: [-Math.PI / 2, .10], top: [0, Math.PI / 2 - .001],
+};
+const smooth = value => { const t = clamp(value, 0, 1); return t * t * (3 - 2 * t); };
 
 function shade(hex, brightness) {
   const raw = parseInt(hex.slice(1), 16);
@@ -27,13 +32,20 @@ function normal(points) {
 }
 
 export class DroneScene {
-  constructor(canvas) {
+  constructor(canvas, { onUpdate } = {}) {
     if (!canvas || typeof canvas.getContext !== 'function') throw new TypeError('DroneScene requires a canvas.');
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.state = { mode: 'idle', pitch: 0, roll: 0, yaw: 0, height: 0, battery: 100 };
-    this.cameraAzimuth = -.64;
-    this.cameraElevation = Math.PI / 4;
+    this.onUpdate = typeof onUpdate === 'function' ? onUpdate : null;
+    this.cameraAzimuth = VIEWS.iso[0];
+    this.cameraElevation = VIEWS.iso[1];
+    this.view = 'iso';
+    this.zoom = 1;
+    this.paused = false;
+    this.playbackRate = 1;
+    this.current = { pitch: 0, roll: 0, yaw: 0, height: 0 };
+    this.transition = null;
     this.distance = 610;
     this.height = 51;
     this.posePitch = 0;
@@ -49,6 +61,9 @@ export class DroneScene {
     this.canvas.setAttribute('aria-label', '可拖动旋转的三维四旋翼无人机，滚轮缩放');
     this.canvas.setAttribute('role', 'img');
     this.motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // These are the lesson's explicitly controlled actions. A visible UI switch
+    // lets learners stop motion without losing the returned angle information.
+    this.motionEnabled = true;
     this.onDown = event => {
       if (event.button !== 0) return;
       this.drag = { x: event.clientX, y: event.clientY };
@@ -58,13 +73,14 @@ export class DroneScene {
     this.onMove = event => {
       if (!this.drag) return;
       this.cameraAzimuth += (event.clientX - this.drag.x) * .007;
-      this.cameraElevation = clamp(this.cameraElevation + (event.clientY - this.drag.y) * .005, .22, 1.1);
+      this.cameraElevation = clamp(this.cameraElevation + (event.clientY - this.drag.y) * .005, .08, Math.PI / 2 - .001);
+      this.view = 'free';
       this.drag = { x: event.clientX, y: event.clientY };
     };
     this.onUp = () => { this.drag = null; this.canvas.style.cursor = 'grab'; };
     this.onWheel = event => {
       event.preventDefault();
-      this.distance = clamp(this.distance + event.deltaY * .30, 475, 860);
+      this.zoom = clamp(this.zoom * Math.exp(-event.deltaY * .0015), .65, 1);
     };
     canvas.addEventListener('pointerdown', this.onDown);
     canvas.addEventListener('pointermove', this.onMove);
@@ -99,11 +115,65 @@ export class DroneScene {
     // interpolation already handle equivalent orientations such as -90 / 270.
     this.state.height = clamp(this.state.height, 0, 120);
     this.state.battery = clamp(this.state.battery, 0, 100);
+    const target = this.state.mode === 'flying'
+      ? { pitch: this.state.pitch, roll: this.state.roll, yaw: this.state.yaw, height: this.state.height }
+      : { pitch: 0, roll: 0, yaw: 0, height: 0 };
+    const previous = this.transition?.to || this.current;
+    if (Object.keys(target).some(key => target[key] !== previous[key])) {
+      this.transition = { from: { ...this.current }, to: target, elapsed: 0, duration: 1.3, replay: false };
+    }
+    if (this.state.mode !== 'flying') { this.current = { ...target }; this.transition = null; }
     const status = { idle: '待命', defined: '函数已定义', called: '调用函数，旋翼启动', flying: '飞行', blocked: '条件未满足，留在起飞坪', landed: '已降落', error: '代码有误，留在起飞坪' }[this.state.mode];
     this.canvas.setAttribute('aria-label', status + '；俯仰 ' + this.state.pitch + ' 度，横滚 ' + this.state.roll + ' 度，偏航 ' + this.state.yaw + ' 度；可拖动旋转视角、滚轮缩放');
   }
 
-  resetCamera() { this.cameraAzimuth = -.64; this.cameraElevation = Math.PI / 4; this.distance = 610; }
+  setView(view = 'iso') {
+    if (!VIEWS[view]) return false;
+    [this.cameraAzimuth, this.cameraElevation] = VIEWS[view];
+    this.view = view;
+    this.zoom = 1;
+    return true;
+  }
+
+  resetCamera() { this.setView('iso'); }
+
+  setPaused(paused) { this.paused = Boolean(paused); }
+
+  setMotionEnabled(enabled) { this.motionEnabled = Boolean(enabled); }
+
+  setPlaybackRate(rate) {
+    const value = Number(rate);
+    this.playbackRate = Number.isFinite(value) ? clamp(value, .25, 3) : 1;
+  }
+
+  replayAttitude() {
+    if (this.state.mode !== 'flying') return false;
+    const target = { pitch: this.state.pitch, roll: this.state.roll, yaw: this.state.yaw, height: this.state.height };
+    // Retain altitude, including a pending climb, while inspecting each real angle.
+    this.current = { ...this.current, pitch: 0, roll: 0, yaw: 0 };
+    this.transition = { from: { ...this.current }, to: target, elapsed: 0, duration: 4.8, replay: true };
+    return true;
+  }
+
+  advance(dt) {
+    const transition = this.transition;
+    let progress = 1, phase = 'complete';
+    if (transition) {
+      if (!this.paused) transition.elapsed += dt * this.playbackRate;
+      progress = this.motionEnabled ? clamp(transition.elapsed / transition.duration, 0, 1) : 1;
+      for (const key of ['pitch', 'roll', 'yaw', 'height']) {
+        let amount = progress;
+        if (transition.replay && key !== 'height') {
+          const index = ['pitch', 'roll', 'yaw'].indexOf(key);
+          amount = clamp(progress * 3 - index, 0, 1);
+        }
+        this.current[key] = mix(transition.from[key], transition.to[key], smooth(amount));
+      }
+      phase = transition.replay ? ['pitch', 'roll', 'yaw'][Math.min(2, Math.floor(progress * 3))] : 'transition';
+      if (progress >= 1) { this.transition = null; phase = 'complete'; }
+    }
+    this.onUpdate?.({ ...this.current, progress, phase, playing: Boolean(this.transition) && !this.paused, paused: this.paused, view: this.view });
+  }
 
   resize() {
     const rect = this.canvas.getBoundingClientRect();
@@ -137,7 +207,42 @@ export class DroneScene {
     const y = dy * cp - z * sp;
     const depth = this.distance - (dy * sp + z * cp);
     const scale = this.focal / Math.max(100, depth);
-    return { x: this.width * .5 + x * scale, y: this.heightPx * .54 - y * scale, depth, scale };
+    return { x: (this.originX ?? this.width * .5) + x * scale, y: (this.originY ?? this.heightPx * .54) - y * scale, depth, scale };
+  }
+
+  framingPoints() {
+    const points = [];
+    for (const x of [-111, 111]) for (const z of [-91, 91]) {
+      for (let i = 0; i < 32; i++) {
+        const angle = i / 32 * TAU;
+        points.push(this.local({ x: x + Math.cos(angle) * 54, y: 29, z: z + Math.sin(angle) * 54 }));
+      }
+      points.push(this.local({ x, y: -12, z }));
+    }
+    for (const x of [-46, 46]) for (const y of [-51, 29]) for (const z of [-66, 66]) points.push(this.local({ x, y, z }));
+    points.push(this.local({ x: 0, y: 30, z: 182 }));
+    for (let i = 0; i < 32; i++) {
+      const angle = i / 32 * TAU;
+      points.push({ x: Math.cos(angle) * 168, y: this.height - 5, z: Math.sin(angle) * 168 });
+    }
+    return points;
+  }
+
+  fitCamera() {
+    this.lookY = this.height;
+    this.focal = 1;
+    this.originX = 0;
+    this.originY = 0;
+    const points = this.framingPoints().map(point => this.project(point));
+    const left = Math.min(...points.map(point => point.x));
+    const right = Math.max(...points.map(point => point.x));
+    const top = Math.min(...points.map(point => point.y));
+    const bottom = Math.max(...points.map(point => point.y));
+    const availableWidth = Math.min(this.width - 36, this.width * .84, 410);
+    const availableHeight = Math.max(100, this.heightPx - 156);
+    this.focal = Math.min(availableWidth / (right - left), availableHeight / (bottom - top)) * this.zoom;
+    this.originX = this.width / 2 - (left + right) / 2 * this.focal;
+    this.originY = (88 + this.heightPx - 68) / 2 - (top + bottom) / 2 * this.focal;
   }
 
   local(point) {
@@ -239,8 +344,10 @@ export class DroneScene {
       for(let i=0;i<5;i++) this.line([{x:side*45.5,y:6,z:-19+i*7},{x:side*43.4,y:14,z:-19+i*7}],'#95b5bd',1.2);
       this.line([{x:side*37,y:-2,z:43},{x:side*29,y:-2,z:54}],this.accent,2.2);
     });
-    // Bright nose marker keeps the yaw direction readable through a full turn.
-    this.face([{x:-10,y:26.9,z:36},{x:10,y:26.9,z:36},{x:0,y:26.9,z:49}], this.accent, {unlit:true,depthBias:-42});
+    // A large orange nose and cyan tail remain distinct in every camera view.
+    this.face([{x:-31,y:26.9,z:31},{x:31,y:26.9,z:31},{x:22,y:26.9,z:48},{x:0,y:26.9,z:58},{x:-22,y:26.9,z:48}], COLORS.front, {unlit:true,depthBias:-42});
+    this.face([{x:-22,y:27,z:-49},{x:22,y:27,z:-49},{x:22,y:27,z:-38},{x:-22,y:27,z:-38}], COLORS.rear, {unlit:true,depthBias:-43});
+    this.face([{x:-9,y:27.4,z:35},{x:9,y:27.4,z:35},{x:0,y:27.4,z:48}], '#322c28', {unlit:true,depthBias:-44});
     // Suspended camera gimbal with a glass lens on the front (+z).
     this.box(0,-20,42,12,10,10,COLORS.navy);
     this.box(0,-30,48,29,22,24,'#294651','#3c5f6e');
@@ -266,28 +373,61 @@ export class DroneScene {
 
   arm(x,z,index,time) {
     const sideX=Math.sign(x),sideZ=Math.sign(z);
+    const navigationColor=sideZ>0?COLORS.front:COLORS.rear;
     this.beam(sideX*28,sideZ*26,x,z,-2,18,12,'#254958','#547480');
-    this.beam(sideX*35,sideZ*31,x*.95,z*.95,5,14,6,'#bed5db','#edf6f7');
+    this.beam(sideX*35,sideZ*31,x*.95,z*.95,5,16,7,navigationColor,navigationColor);
     this.cylinder(x,-9,z,18,24,'#254453','#233f4e',24);
     this.cylinder(x,9,z,19,4,'#c8dde1','#dff0f0',24);
     this.cylinder(x,13,z,14,5,COLORS.navy,'#3a5c6b',20);
-    this.ring(x,13.4,z,17,this.accent,2.5,{depthBias:-22});
+    this.ring(x,13.4,z,17,navigationColor,3.5,{depthBias:-22});
     this.cylinder(x,18,z,7,9,'#354f5d','#7c9aa6',16);
-    // Directional navigation lights: white rear pair, amber front pair.
-    this.disk(x,7.8,z+sideZ*14,3.3,sideZ>0?this.accent:'#e2f7fa',{unlit:true});
+    this.disk(x,7.8,z+sideZ*14,5,navigationColor,{unlit:true});
     const phase=this.rotor*(index%2?-1:1)+index*.83;
     const spinning=this.state.mode==='flying'||this.state.mode==='called';
     if(spinning&&!this.motionQuery.matches) {
-      this.disk(x,24,z,53,'#8aacb5',{alpha:.10,unlit:true});
-      this.ring(x,24.1,z,52,'#8fbdc1',.7,{alpha:.29});
-      this.ring(x,24.1,z,43,'#b2d3d6',.6,{alpha:.20});
+      this.disk(x,24,z,53,navigationColor,{alpha:.09,unlit:true});
+      this.ring(x,24.1,z,52,navigationColor,1.7,{alpha:.75});
+      this.ring(x,24.1,z,43,navigationColor,.7,{alpha:.28});
     }
     for(let blade=0;blade<2;blade++) {
       const angle=phase+blade*Math.PI;
       const shape=[[3,-3],[17,-5],[49,-1],[52,3],[33,5],[10,3]];
-      this.face(shape.map(([r,w])=>({x:x+Math.cos(angle)*r-Math.sin(angle)*w,y:25.5,z:z+Math.sin(angle)*r+Math.cos(angle)*w})), '#284854', {alpha:spinning?.47:.94,unlit:true});
+      this.face(shape.map(([r,w])=>({x:x+Math.cos(angle)*r-Math.sin(angle)*w,y:25.5,z:z+Math.sin(angle)*r+Math.cos(angle)*w})), navigationColor, {alpha:spinning?.51:.85,unlit:true});
     }
     this.cylinder(x,24,z,5.2,4,'#839fa9','#e5f2f5',14);
+  }
+
+  referencePlane() {
+    if (this.state.mode !== 'flying') return;
+    const y=this.height-5;
+    this.disk(0,y,0,168,'#6ba9c3',{world:true,unlit:true,alpha:.035,depthBias:500});
+    this.ring(0,y,0,168,'#8db9ce',1.3,{world:true,alpha:.52,dash:[6,7],depthBias:500});
+    this.line([{x:-168,y,z:0},{x:168,y,z:0}],'#9bc1d5',1.4,{world:true,alpha:.65,dash:[5,6],depthBias:500});
+    this.line([{x:0,y,z:-168},{x:0,y,z:168}],'#9bc1d5',1.4,{world:true,alpha:.65,dash:[5,6],depthBias:500});
+    // A neutral wire outline makes the true bank angle easy to compare at rest.
+    for(const x of [-111,111]) for(const z of [-91,91]) {
+      this.ring(x,y,z,51,'#8eb2c8',.9,{world:true,alpha:.25,dash:[3,5],depthBias:500});
+    }
+  }
+
+  drawNoseLabel() {
+    const {ctx}=this;
+    const start=this.project(this.local({x:0,y:30,z:77}));
+    const end=this.project(this.local({x:0,y:30,z:178}));
+    const angle=Math.atan2(end.y-start.y,end.x-start.x);
+    ctx.strokeStyle=COLORS.front;ctx.fillStyle=COLORS.front;ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(start.x,start.y);ctx.lineTo(end.x,end.y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(end.x,end.y);
+    ctx.lineTo(end.x-Math.cos(angle-.46)*12,end.y-Math.sin(angle-.46)*12);
+    ctx.lineTo(end.x-Math.cos(angle+.46)*12,end.y-Math.sin(angle+.46)*12);ctx.closePath();ctx.fill();
+    const x=clamp(end.x+Math.cos(angle)*25,34,this.width-34);
+    const y=clamp(end.y+Math.sin(angle)*22,84,this.heightPx-57);
+    ctx.fillStyle='#ffac47';ctx.beginPath();ctx.roundRect(x-26,y-12,52,24,6);ctx.fill();
+    ctx.fillStyle='#29251e';ctx.font='700 13px "Microsoft YaHei", sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('机头',x,y);
+    if(this.state.mode==='flying') {
+      ctx.textAlign='left';ctx.font='11px "Microsoft YaHei", sans-serif';ctx.fillStyle='#b7d0e0';
+      ctx.fillText('虚线：水平姿态基准',18,this.heightPx-57);
+    }
   }
 
   ground(time) {
@@ -345,33 +485,28 @@ export class DroneScene {
     ctx.setTransform(this.dpr,0,0,this.dpr,0,0);
     ctx.clearRect(0,0,w,h);
     const {mode}=this.state;
-    const reduced=this.motionQuery.matches;
+    const reduced=!this.motionEnabled;
     const active=mode==='flying';
     const spinning=active||mode==='called';
-    const blend=reduced?1:1-Math.exp(-dt*6);
-    // Bound lift and perspective together so combined 30-degree attitudes, complete
-    // propeller rings and the pad fit beneath the stage header on narrow screens.
-    const lift=active ? 20 + 50 * (1-Math.exp(-this.state.height/23)) : 0;
-    const targetHeight=51+lift;
-    this.height=mix(this.height,targetHeight,reduced?1:1-Math.exp(-dt*3.5));
-    const targetPitch=(active?this.state.pitch:0)*Math.PI/180;
-    const targetRoll=(active?this.state.roll:0)*Math.PI/180;
-    const targetYaw=this.state.yaw*Math.PI/180;
-    this.posePitch=mix(this.posePitch,targetPitch,blend);
-    this.poseRoll=mix(this.poseRoll,targetRoll,blend);
-    const yawDifference=Math.atan2(Math.sin(targetYaw-this.poseYaw),Math.cos(targetYaw-this.poseYaw));
-    this.poseYaw+=yawDifference*blend;
-    this.rotor+=reduced?0:dt*(active?43:spinning?21:0);
+    this.advance(dt);
+    const lift=active?18+62*(1-Math.exp(-this.current.height/28)):0;
+    this.height=51+lift;
+    this.posePitch=this.current.pitch*Math.PI/180;
+    this.poseRoll=this.current.roll*Math.PI/180;
+    this.poseYaw=this.current.yaw*Math.PI/180;
+    this.rotor+=reduced||this.paused?0:dt*this.playbackRate*(active?43:spinning?21:0);
     this.accent=mode==='error'?'#ff7979':mode==='blocked'?'#ffc05e':mode==='landed'?'#91b9c7':COLORS.mint;
-    this.lookY=115;
-    this.focal=Math.min(w*.95,h*.80)/(2*Math.tan(22.5*Math.PI/180));
+    this.fitCamera();
     this.faces=[];
     this.ground(time);
+    this.referencePlane();
     [[-111,-91],[111,-91],[-111,91],[111,91]].forEach(([x,z],i)=>this.arm(x,z,i,time));
     this.body();
     this.faces.sort((a,b)=>b.depth-a.depth);
     ctx.lineJoin='round';
     ctx.lineCap='round';
+    ctx.save();
+    ctx.beginPath();ctx.rect(0,68,w,h-106);ctx.clip();
     for(const face of this.faces) {
       if(face.points.length<2)continue;
       ctx.globalAlpha=face.alpha;
@@ -385,5 +520,7 @@ export class DroneScene {
       }
     }
     ctx.globalAlpha=1;
+    ctx.restore();
+    this.drawNoseLabel();
   }
 }

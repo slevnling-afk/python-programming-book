@@ -319,21 +319,21 @@ print("返回对象类型：", type(parse_mission_id(mission_id)))
   },
   {
     id: "09",
-    title: "课内迁移：把姿态作为四个返回值",
-    shortTitle: "姿态实验",
+    title: "姿态挑战：让四个返回值改变飞机",
+    shortTitle: "三轴姿态挑战",
     kicker: "课内迁移 · 普通调用与元组返回",
-    description: "把刚学的多值返回迁移到姿态数据。填写俯仰、横滚、航向、高度；每次修改都由 Python 重新调用、返回并接收。",
+    description: "先让飞机水平悬停，再挑战大幅抬头、侧倾和原地转向。修改调用里的四个数字；Python 返回的每一项，都会对应到飞机的一项姿态。",
     objective: "用普通位置实参和元组返回传递四个数值，观察返回结果驱动模型姿态。",
-    concept: "make_attitude 接收四个普通参数，return 一个四项元组。主流程按相同顺序接收；右侧严格使用这次执行得到的 pitch、roll、yaw、height。",
-    traceHint: "俯仰/横滚可填 -30～30，航向 -180～180，高度 5～60。先单独改一个数，再组合观察。",
+    concept: "make_attitude 接收四个普通参数，return 一个四项元组。主流程按顺序接收为 pitch、roll、yaw、height。先只改一项，观察是哪一个返回值改变了模型；再组合两项，比较飞机与水平参考的夹角。",
+    traceHint: "先输入 0 / 0 / 0 / 25 作为水平对照，再依次试 30 / 0 / 0 / 25、0 / 30 / 0 / 25、0 / 0 / 90 / 25。侧面看俯仰，正面看横滚，俯视看航向。",
     blanks: [
       { id: "l09_return", answer: "return", hint: "把四个姿态值组成元组交回调用者。", explanation: "用逗号分隔四项返回值，不需要引入新的参数语法。" },
       { id: "l09_height_name", answer: "height", hint: "第 4 项要返回传入的高度形参。", explanation: "返回顺序与调用处四个接收变量保持一致。" },
       { id: "l09_call", answer: "make_attitude", hint: "调用上面定义的姿态数据函数。", explanation: "后面的四个数依次交给 pitch、roll、yaw、height。" },
-      { id: "l09_pitch", answer: "12", hint: "俯仰角：可填 -30～30 的数值。", explanation: "改变第一个实参，返回元组的第一项随之改变。", numberRange: [-30, 30] },
-      { id: "l09_roll", answer: "-10", hint: "横滚角：可填 -30～30 的数值。", explanation: "第二项被调用处的 roll 接收，控制左右倾斜。", numberRange: [-30, 30] },
-      { id: "l09_yaw", answer: "45", hint: "航向角：可填 -180～180 的数值。", explanation: "第三项被 yaw 接收，控制水平朝向。", numberRange: [-180, 180] },
-      { id: "l09_height", answer: "25", hint: "演示高度：可填 5～60 的数值。", explanation: "第四项被 height 接收，控制悬停高度。", numberRange: [5, 60] },
+      { id: "l09_pitch", answer: "28", hint: "俯仰角可填 -30～30。先比较 0 与 30，再比较 -30。", explanation: "第一个实参成为返回元组的第一项，再被 pitch 接收。观察机头相对水平参考的抬起或压低。", numberRange: [-30, 30] },
+      { id: "l09_roll", answer: "-28", hint: "横滚角可填 -30～30。把俯仰归零，再比较 -30、0、30。", explanation: "第二项被 roll 接收，控制机身向两侧倾斜。固定其他实参，更容易看出这个返回值的作用。", numberRange: [-30, 30] },
+      { id: "l09_yaw", answer: "90", hint: "航向角可填 -180～180。把前两项归零，试 0、90、180。", explanation: "第三项被 yaw 接收，改变机头在水平面内的朝向。俯视时可结合机头标记观察。", numberRange: [-180, 180] },
+      { id: "l09_height", answer: "35", hint: "演示高度可填 5～60。固定三个角度，比较 5 与 60。", explanation: "第四项被 height 接收，控制悬停高度。角度相同时，改变高度不会改变机身倾斜方向。", numberRange: [5, 60] },
     ],
     code: `# 课内迁移：仍然只有函数定义、普通调用与多值返回
 def make_attitude(pitch, roll, yaw, height):
@@ -352,7 +352,7 @@ print("航向：", yaw, "高度：", height)
 # 右侧读取真实返回并接收的这四个变量
 # @event attitude`,
     scenarios: [
-      { id: "attitude", label: "自由姿态实验", description: "试试 0 / 0 / 0 / 15，再改为 20 / -15 / 90 / 40；观察每一项的作用。", prelude: "" },
+      { id: "attitude", label: "三轴姿态挑战", description: "挑战顺序：水平对照 → 30° 俯仰 → 30° 横滚 → 90° 转向 → 组合姿态。每次只改一个数，先预测飞机怎样变，再运行验证。", prelude: "" },
     ],
     defaultScenario: "attitude",
   },

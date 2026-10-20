@@ -286,7 +286,7 @@ print('B')`, (r) => {
           assert.match(r.output, /class 'tuple'/);
         }
         if (lesson.id === '09') {
-          assert.deepEqual(['pitch', 'roll', 'yaw', 'height'].map((key) => r.events.at(-1).scope[key]), [12, -10, 45, 25]);
+          assert.deepEqual(['pitch', 'roll', 'yaw', 'height'].map((key) => r.events.at(-1).scope[key]), [28, -28, 90, 35]);
         }
         if (lesson.id === '10') {
           const allowed = scenario.id === 'ready';
