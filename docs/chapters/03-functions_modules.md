@@ -316,12 +316,13 @@ print("区域：", a)
 要求：调用一次，例如 `calc_flight_cost(90, 72)`，并打印返回值。程序可直接运行。
 :::
 
-(functions-project-one-lab)=
 
-:::{admonition} 网页交互实训：无人机函数飞行工坊
+(functions-project-one-lab)=
+## 3.1.4 交互实训：无人机函数飞行工坊
+:::{admonition} 函数定义以无人机姿态演示
 :class: tip
 
-把本项目的知识用起来：左侧补全 Python 函数代码，右侧观察无人机模型与执行过程。练习覆盖函数定义与调用、布尔/数字/字符串返回值、默认返回 `None`、多值返回和元组解包。
+左侧补全 Python 函数代码，右侧观察无人机模型与执行过程。练习覆盖函数定义与调用、布尔/数字/字符串返回值、默认返回 `None`、多值返回和元组解包。
 
 <p><strong><a href="../_static/labs/function-flight/index.html">进入无人机函数飞行工坊 →</a></strong></p>
 
