@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#152d3b">
+<title>无人机指令飞行实验室 · 函数参数</title>
+<meta name="description" content="补全 Python 函数参数，让无人机自旋、升降、访问航点、飞出圆形与8字航线。模块三项目二互动练习。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23152d3b'/%3E%3Ctext x='6' y='29' font-size='28' fill='%23b8e96d'%3E↗%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="../../../chapters/03-functions_modules.html#functions-project-two-lab"><span class="brand-mark">↗</span><span>指令飞行实验室<small>PARAMETER FLIGHT LAB</small></span></a><span class="course-location">模块 03 <i>/</i> 项目 02 · 函数参数</span><div class="header-actions"><span id="totalProgress">准备任务</span><button id="guideBtn" class="light-button">使用指南 ?</button><a href="../../../chapters/03-functions_modules.html#functions-project-two-lab">返回教材 ↗</a></div></header>
+<main>
+<section class="intro"><div><p class="eyebrow">YOUR ARGUMENTS. YOUR FLIGHT.</p><h1>给函数传个参数，<span>让飞机换个飞法。</span></h1><p>从一个坐标到一整条航线。补全左侧 Python，在右侧看见每次调用的真实参数与飞行动作。</p></div><div class="intro-stamp"><span>MISSION SERIES</span><b>03<span>.2</span></b><small id="lessonSummary">位置 · 关键字 · 默认值 · 可变参数</small></div></section>
+<nav id="lessonNav" class="lesson-nav" aria-label="选择任务"></nav>
+<div class="lab-grid">
+<section class="code-panel" aria-labelledby="lessonTitle">
+<div class="panel-label"><span><i></i>01 / CODE CONTROL</span><span id="blankCount">0 / 0 空</span></div>
+<div class="lesson-intro"><div class="lesson-meta"><span id="lessonKicker"></span><span id="lessonNumber"></span></div><h2 id="lessonTitle"></h2><p id="lessonDescription"></p><div class="objective"><span>本关挑战</span><p id="objectiveText"></p></div></div>
+<div class="scenario-row"><label for="scenarioSelect">飞行情境</label><select id="scenarioSelect"></select><button id="dataBtn" class="text-button" aria-expanded="false">查看输入 ⌄</button></div>
+<div id="dataBox" class="data-box" hidden><p id="scenarioDescription"></p><pre id="inputData"></pre></div>
+<div class="editor-tab"><span><i></i>flight_commands.py</span><label><input id="autoRun" type="checkbox" checked> 填空后自动预演</label></div>
+<div id="editor" class="editor" role="group" aria-label="Python代码填空"></div>
+<div class="editor-help"><kbd>Tab</kbd> 下一空 <span>·</span> 绿色数值空可以自由探索 <span>·</span> 未填空在预演中使用参考值</div>
+<div id="feedback" class="feedback" role="status" aria-live="polite"></div><div id="hintBox" class="hint-box" hidden></div>
+<div class="code-actions"><button id="runBtn" class="run-button">▶ 运行完整代码 <kbd>Ctrl ↵</kbd></button><button id="hintBtn" class="light-button">给我提示</button><button id="resetBtn" class="reset-button" aria-label="清空本关填空" title="清空本关填空">↺</button><button id="answerBtn" class="text-button">参考答案</button></div>
+</section>
+<section class="flight-panel" aria-labelledby="flightTitle">
+<div class="panel-label"><span><i></i>02 / FLIGHT THEATRE <em id="flightTitle">飞行剧场</em></span><span id="previewMode">等待输入</span></div>
+<div class="scene"><div class="scene-top"><div><span class="tiny-label">VIRTUAL TRAINING ARENA</span><h3>UAV–07 <small>SIM</small></h3></div><span id="flightBadge" class="flight-badge"><i></i>悬停待命</span></div><canvas id="droneCanvas" role="img" aria-label="三维无人机飞行演示，展示坐标移动、升降、自旋和曲线航迹"></canvas><div class="scene-bottom"><span id="sceneCaption">从原点上方 10 m 开始，准备第一条指令。</span><button id="cameraBtn" aria-label="恢复模型视角" title="恢复视角">⤾</button></div></div>
+<div class="telemetry"><div><span>X 坐标</span><strong id="xValue">0<em>m</em></strong></div><div><span>Y 坐标</span><strong id="yValue">0<em>m</em></strong></div><div><span>Z 高度</span><strong id="zValue">0<em>m</em></strong></div><div><span>累计航向</span><strong id="yawValue">0<em>°</em></strong></div></div>
+<div class="flight-controls"><div class="mission-progress"><span id="actionProgress">等待下发指令</span><div><i id="flightProgress"></i></div></div><select id="speedSelect" aria-label="动画回放速度"><option value="1">1×</option><option value="2">2×</option><option value="0.5">0.5×</option></select><button id="pauseBtn" disabled>暂停</button><button id="replayBtn" disabled>↻ 重飞</button></div>
+<div class="binding-panel"><div class="section-heading"><span>参数如何进入函数</span><code id="currentFunction">等待调用</code></div><div id="bindings" class="bindings"><p class="empty-state">运行代码后，这里会显示当前动作收到的实际参数。</p></div><p id="bindingNote">位置决定对应，名字指定参数；省略的参数会使用默认值。</p></div>
+<div class="queue-panel"><div class="section-heading"><span>飞行指令队列</span><small id="queueCount">0 条指令</small></div><div id="commandQueue" class="command-queue"><p class="empty-state">你的下一次调用，将变成这里的一段航迹。</p></div></div>
+<div class="console"><div class="console-head"><span><i></i>PYTHON OUTPUT</span><small id="consoleStatus">READY</small></div><pre id="consoleOutput" role="log" aria-live="off"># 每次预演都会实际运行当前 Python 代码。
+# 完成一个空格，看看参数带来了什么变化。</pre></div>
+</section>
+</div>
+<section class="concept-bar"><span>↳</span><p id="conceptText"></p><button id="nextBtn">下一关 →</button></section>
+<footer><span>模块三 · 项目二 · 无人机“指令下发器”</span><span>飞行采用压缩时间的教学仿真，坐标与动作来自代码中的实际参数。</span><button id="downloadBtn" class="text-button">↓ 下载本关 Python</button></footer>
+</main>
+<dialog id="guideDialog"><div class="dialog-head"><div><p class="eyebrow">BRIEFING / 起飞前简报</p><h2>用参数，编排一场飞行。</h2></div><button class="close-dialog" aria-label="关闭使用指南">×</button></div><ol class="guide-list"><li><b>从第一关开始补空。</b> 位置参数、关键字参数、默认参数，再到 *args 和 **kwargs。Tab 可以快速切换空格。</li><li><b>每填一空，自动预演。</b> 已填内容按实际输入执行；未填部分暂用参考值。部分预演不会记为通关。全部填写并运行成功后完成任务。</li><li><b>大胆改动数值。</b> 绿色数值空允许范围内的不同答案。换个坐标、转两圈、飞半个 8 字，比较航迹与参数。</li><li><b>看清参数绑定和动作队列。</b> 每轮从原点上方 10 m 开始，飞机依次执行指令；右侧显示实际参数。暂停、调速和重飞都可以使用。</li><li><b>代码出错，也是一次实验。</b> 运行引擎会报告真实 Python 错误。点击空格再选“给我提示”，查看该空的作用和探索范围。</li></ol><div class="guide-note">本实验覆盖教材项目二的函数参数。飞行动作是参数使用的课堂扩展。浏览器内置本地 Python 解释器，无需额外安装；下载代码保留纯 Python 的指令输出。</div><a href="https://skulpt.org/" target="_blank" rel="noopener">Python 执行引擎 · Skulpt ↗</a></dialog>
+<dialog id="answerDialog"><div class="dialog-head"><div><p class="eyebrow">REFERENCE / 对照与理解</p><h2>参考一个起点，探索更多飞法。</h2></div><button class="close-dialog" aria-label="关闭参考答案">×</button></div><p class="answer-intro">数值空支持范围内的不同答案。参考值只演示其中一种飞行方式。</p><div id="answerContent"></div><div class="dialog-actions"><button id="fillAnswerBtn" class="run-button">填入参考答案并运行</button><button class="close-dialog light-button">继续自己填写</button></div></dialog>
+<div id="toast" class="toast" hidden role="status"></div>
+<script type="module" src="app.js"></script>
+</body></html>
