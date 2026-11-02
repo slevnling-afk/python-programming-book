@@ -88,3 +88,12 @@ xelatex python_programming_book.tex
 10 个任务用 Python 代码填空练习位置参数、关键字参数、默认参数、`*args` 与 `**kwargs`。学生可以改变坐标、高度、自旋圈数和 8 字航线圈数，编排航点巡航、环绕与返航；右侧模型、参数绑定和指令队列跟随实际执行结果。未填空在逐空预演中暂用参考值。
 
 源码位于 `docs/_static/labs/parameter-flight/`，随现有 Sphinx / GitHub Pages 流程发布，浏览器 Python 运行库保存在本地。第三方许可见 `vendor/SKULPT-LICENSE.txt`。运行验证：`node tests/parameter-flight-runtime.cjs`。
+
+
+## 模块三 · 项目三交互实训
+
+[进入无人机任务计分飞行挑战](https://slevnling-afk.github.io/python-programming-book/_static/labs/scope-flight/index.html)。教材项目三末尾也有入口。
+
+10 个代码填空任务覆盖局部变量、global、内嵌作用域、lambda 与递归。实际 Python 计算驱动升降、自旋、航点巡航、整圈与半圈 8 字、环绕和返航，并展示局部/全局/外层变量快照与递归调用层级。参考试飞不计通关且保留原稿。
+
+源码：`docs/_static/labs/scope-flight/`。本地 Skulpt 运行库随网站发布。验证：`node tests/scope-flight-runtime.cjs` 与 `node tests/scope-flight-motion.cjs`。Windows 受限目录可给 Node 添加 `--preserve-symlinks --preserve-symlinks-main`。

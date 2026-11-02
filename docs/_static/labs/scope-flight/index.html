@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#152d3b">
+<title>无人机任务计分飞行挑战 · 作用域与函数进阶</title>
+<meta name="description" content="用 Python 局部变量、全局变量、嵌套函数、lambda 与递归控制三维无人机，探索计分、升降、自旋和8字航线。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23152d3b'/%3E%3Ctext x='6' y='29' font-size='28' fill='%23b8e96d'%3E↗%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="../../../chapters/03-functions_modules.html#functions-project-three-lab"><span class="brand-mark">↗</span><span>任务计分飞行挑战<small>SCOPE FLIGHT CHALLENGE</small></span></a><span class="course-location">模块 03 <i>/</i> 项目 03 · 作用域与函数进阶</span><div class="header-actions"><span id="totalProgress">准备任务</span><button id="guideBtn" class="light-button">使用指南 ?</button><a href="../../../chapters/03-functions_modules.html#functions-project-three-lab">返回教材 ↗</a></div></header>
+<main>
+<section class="intro"><div><p class="eyebrow">LOCAL → GLOBAL → ENCLOSING → RECURSION</p><h1>写一段计算，<span>飞出你的任务得分。</span></h1><p>让变量走进不同作用域，让飞机走出不同航线。填写 Python，观察真实计算结果、飞行动作和递归调用。</p></div><div class="intro-stamp"><span>MISSION SERIES</span><b>03<span>.3</span></b><small id="lessonSummary">局部 · 全局 · 嵌套 · lambda · 递归</small></div></section>
+<section class="experience-banner"><div><strong>先体验：让嵌套函数画出 8 字</strong><p>整圈还是半圈？改变外层变量，预测内层计算与航迹。</p></div><button id="demoBtn">▶ 参考试飞</button></section>
+<nav id="lessonNav" class="lesson-nav" aria-label="选择任务"></nav>
+<div class="lab-grid">
+<section class="code-panel" aria-labelledby="lessonTitle">
+<div class="panel-label"><span><i></i>01 / CODE CONTROL</span><span id="blankCount">0 / 0 空</span></div>
+<div class="lesson-intro"><div class="lesson-meta"><span id="lessonKicker"></span><span id="lessonNumber"></span></div><h2 id="lessonTitle"></h2><p id="lessonDescription"></p><div class="objective"><span>本关挑战</span><p id="objectiveText"></p></div></div>
+<div class="scenario-row"><label for="scenarioSelect">飞行情境</label><select id="scenarioSelect"></select><button id="dataBtn" class="text-button" aria-expanded="false">查看输入 ⌄</button></div>
+<div id="dataBox" class="data-box" hidden><p id="scenarioDescription"></p><pre id="inputData"></pre></div>
+<div id="scratchNotice" class="scratch-notice" hidden><span><b>试飞草稿 · 不计通关</b> 可自由改数字，原有练习保留。</span><button id="exitScratchBtn">返回我的填空 ↩</button></div>
+<div class="editor-tab"><span><i></i>uav_mission_score.py</span><label><input id="autoRun" type="checkbox" checked> 填空后自动预演</label></div>
+<div id="editor" class="editor" role="group" aria-label="Python代码填空"></div>
+<div class="editor-help"><kbd>Tab</kbd> 下一空 <span>·</span> 绿色数值空可以自由探索 <span>·</span> 未填空在预演中使用参考值</div>
+<div id="feedback" class="feedback" role="status" aria-live="polite"></div><div id="hintBox" class="hint-box" hidden></div>
+<div class="code-actions"><button id="runBtn" class="run-button">▶ 运行完整代码 <kbd>Ctrl ↵</kbd></button><button id="hintBtn" class="light-button">给我提示</button><button id="resetBtn" class="reset-button" aria-label="清空本关填空" title="清空本关填空">↺</button><button id="answerBtn" class="text-button">参考答案</button></div>
+</section>
+<section class="flight-panel" aria-labelledby="flightTitle">
+<div class="panel-label"><span><i></i>02 / FLIGHT THEATRE <em id="flightTitle">飞行剧场</em></span><span id="previewMode">等待输入</span></div>
+<div class="scene"><div class="scene-top"><div><span class="tiny-label">VIRTUAL TRAINING ARENA</span><h3>UAV–07 <small>SIM</small></h3></div><span id="flightBadge" class="flight-badge"><i></i>悬停待命</span></div><canvas id="droneCanvas" role="img" aria-label="三维无人机飞行演示，展示坐标移动、升降、自旋和曲线航迹"></canvas><canvas id="routeMap" class="route-map" width="148" height="108" role="img" aria-label="俯视航迹"></canvas><div class="scene-bottom"><span id="sceneCaption">从原点上方 10 m 开始，准备第一条指令。</span><button id="cameraBtn" aria-label="恢复模型视角" title="恢复视角">⤾</button></div></div>
+<div class="scoreboard"><div><span>快照中的累计分</span><strong id="scoreValue">—</strong></div><div><span>当前关键值</span><code id="resultValue">等待计算</code></div><div><span>调用层数</span><strong id="depthValue">0</strong></div></div>
+<div class="telemetry"><div><span>X 坐标</span><strong id="xValue">0<em>m</em></strong></div><div><span>Y 坐标</span><strong id="yValue">0<em>m</em></strong></div><div><span>Z 高度</span><strong id="zValue">0<em>m</em></strong></div><div><span>累计航向</span><strong id="yawValue">0<em>°</em></strong></div></div>
+<div class="scene-settings"><div><button data-view="iso" class="active">立体</button><button data-view="top">俯视航线</button><button data-view="front">正面</button></div><label><input id="motionEnabled" type="checkbox" checked> 动态演示</label></div>
+<div class="flight-controls"><div class="mission-progress"><span id="actionProgress">等待下发指令</span><div><i id="flightProgress"></i></div></div><select id="speedSelect" aria-label="动画回放速度"><option value="1">1×</option><option value="2">2×</option><option value="0.5">0.5×</option></select><button id="pauseBtn" disabled>暂停</button><button id="replayBtn" disabled>↻ 重飞</button></div>
+<div class="trace-controls"><button id="prevTraceBtn" aria-label="查看上一个执行记录">←</button><select id="traceSelect" aria-label="Python实际执行记录"><option>等待执行记录</option></select><button id="nextTraceBtn" aria-label="查看下一个执行记录">→</button><button id="followBtn">跟随飞行</button></div><div id="callStack" class="call-stack">执行函数时，在这里观察调用层级。</div>
+<div class="binding-panel"><div class="section-heading"><span>变量究竟来自哪里</span><code id="currentFunction">等待调用</code></div><div id="bindings" class="bindings"><p class="empty-state">运行代码后，这里会显示本步实际能读取的变量。</p></div><p id="bindingNote">区分局部、全局和内嵌作用域，按实际执行顺序观察变量值。</p></div>
+<div class="queue-panel"><div class="section-heading"><span>飞行指令队列</span><small id="queueCount">0 条指令</small></div><div id="commandQueue" class="command-queue"><p class="empty-state">你的下一次调用，将变成这里的一段航迹。</p></div></div>
+<div class="console"><div class="console-head"><span><i></i>PYTHON OUTPUT</span><small id="consoleStatus">READY</small></div><pre id="consoleOutput" role="log" aria-live="off"># 每次预演都会实际运行当前 Python 代码。
+# 完成一个空格，看看参数带来了什么变化。</pre></div>
+</section>
+</div>
+<section class="concept-bar"><span>↳</span><p id="conceptText"></p><button id="nextBtn">下一关 →</button></section>
+<footer><span>模块三 · 项目三 · 无人机“任务计分器”</span><span>飞行采用压缩时间的教学仿真，动作来自代码实际算出的数据。</span><button id="downloadBtn" class="text-button">↓ 下载本关 Python</button></footer>
+</main>
+<dialog id="guideDialog"><div class="dialog-head"><div><p class="eyebrow">BRIEFING / 起飞前简报</p><h2>变量有边界，飞行有章法。</h2></div><button class="close-dialog" aria-label="关闭使用指南">×</button></div><ol class="guide-list"><li><b>先试飞，再写代码。</b> 顶部“参考试飞”打开临时草稿，展示嵌套变量生成的 8 字航线。试飞不计通关，也不覆盖原有填写。</li><li><b>补全五类知识点。</b> 局部变量、global、嵌套函数、lambda 与递归。每填一空自动预演；未填处暂用参考值，右侧会明确标注。</li><li><b>改变计算，改变动作。</b> 数值空允许范围内的不同答案。比较高低飞行、左右自旋、半圈与整圈 8 字，预测后再运行。</li><li><b>看变量，也看调用。</b> 作用域面板显示实际局部、全局和外层变量。执行记录可逐步查看；选择记录会暂停飞机，点击“跟随飞行”继续。</li><li><b>让递归层层展开，再层层返回。</b> 第 9、10 关显示递归调用层级；终止条件与 n-1 决定何时返回。错误代码会报告真实 Python 异常。</li></ol><div class="guide-note">每轮仿真从原点上方 10 m 开始。动作根据代码中的实际计算结果生成，以压缩时间回放。动态演示可随时关闭；所有 Python 执行资源已保存在本地。下载保留可运行的 Python 计算和指令输出。</div><a href="https://skulpt.org/" target="_blank" rel="noopener">Python 执行引擎 · Skulpt ↗</a></dialog>
+<dialog id="answerDialog"><div class="dialog-head"><div><p class="eyebrow">REFERENCE / 对照与理解</p><h2>看懂计算，再探索另一种飞法。</h2></div><button class="close-dialog" aria-label="关闭参考答案">×</button></div><p class="answer-intro">数值空支持范围内的不同答案。参考值只演示其中一种飞行方式。</p><div id="answerContent"></div><div class="dialog-actions"><button id="fillAnswerBtn" class="run-button">填入参考答案并运行</button><button class="close-dialog light-button">继续自己填写</button></div></dialog>
+<div id="toast" class="toast" hidden role="status"></div>
+<script type="module" src="app.js"></script>
+</body></html>
