@@ -121,7 +121,7 @@ function paintRouteMap(state={}){
 function finishFlight(){paused=false;$('pauseBtn').textContent='暂停';$('pauseBtn').disabled=true;$('flightProgress').style.width='100%';badge('本轮飞行完成');$('sceneCaption').textContent='飞行完成。试着改变一个数值，比较新的航迹。';document.querySelectorAll('.command-chip').forEach(n=>{n.classList.remove('active');n.classList.add('done');});if(following&&traceEvents.length)inspectEvent(traceEvents.length-1);}
 function resetTrace(){
  routePlan=null;miniTrail=[];paintRouteMap();
- traceEvents=[];traceIndex=-1;following=true;$('traceSelect').innerHTML='<option>等待执行记录</option>';$('traceSelect').disabled=true;$('prevTraceBtn').disabled=true;$('nextTraceBtn').disabled=true;$('callStack').textContent='执行函数时，在这里观察调用层级。';$('scoreValue').textContent='—';$('resultValue').textContent='等待计算';$('depthValue').textContent='0';$('followBtn').classList.add('active');
+ traceEvents=[];traceIndex=-1;following=true;$('traceSelect').innerHTML='<option>等待执行记录</option>';$('traceSelect').disabled=true;$('prevTraceBtn').disabled=true;$('nextTraceBtn').disabled=true;$('callStack').textContent='进入递归函数时，在这里观察展开与返回。';$('scoreValue').textContent='—';$('resultValue').textContent='等待计算';$('depthValue').textContent='0';$('followBtn').classList.add('active');
 }
 function prepareTrace(events){
  traceEvents=events.filter(event=>event.type!=='output');const stack=[];
@@ -145,7 +145,7 @@ function inspectEvent(n){
  const globals=groups.global||{},all=event.scope||{};
  $('scoreValue').textContent=Object.hasOwn(globals,'total_score')?format(globals.total_score):Object.hasOwn(all,'total_score')?format(all.total_score):'—';
  const key=['result','subtotal','bonus','pen','penalty','height','turns','n'].find(key=>Object.hasOwn(all,key));$('resultValue').textContent=key?key+' = '+format(all[key],event.types?.[key]):'查看变量快照';
- const frames=event.callStack||[];$('depthValue').textContent=String(frames.length);$('callStack').innerHTML=frames.length?frames.map((frame,index)=>`<span><small>${index+1}</small>${escape(frame.name)}(${frame.n===undefined?'':escape(frame.n)})</span>`).join('<b>→</b>'):'<span class="main-frame">主流程 · 当前没有嵌套调用</span>';
+ const frames=event.callStack||[];$('depthValue').textContent=String(frames.length);$('callStack').innerHTML=frames.length?frames.map((frame,index)=>`<span><small>${index+1}</small>${escape(frame.name)}(${frame.n===undefined?'':escape(frame.n)})</span>`).join('<b>→</b>'):`<span class="main-frame">${event.functionName?'函数作用域 · '+escape(event.functionName)+'()':'主流程 · 当前不在递归调用中'}</span>`;
  $('bindingNote').textContent=`第 ${n+1} / ${traceEvents.length} 个实际执行快照 · ${current().traceHint}`;markLine(event.line);
 }
 function selectTrace(n){following=false;$('followBtn').classList.remove('active');scene.setPaused(true);paused=true;$('pauseBtn').textContent='继续';badge('查看执行快照');inspectEvent(Math.max(0,Math.min(traceEvents.length-1,n)));}
