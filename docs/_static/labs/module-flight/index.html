@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#152d3b">
+<title>无人机模块组装飞行实验室 · 模块、包与库</title>
+<meta name="description" content="通过多文件 Python 填空学习模块、包、标准库和第三方库，实际导入工具后控制无人机升降、自旋、8字与航点飞行。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23152d3b'/%3E%3Ctext x='6' y='29' font-size='28' fill='%23b8e96d'%3E↗%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="../../../chapters/03-functions_modules.html#functions-project-four-lab"><span class="brand-mark">↗</span><span>模块组装飞行实验室<small>MODULE FLIGHT LAB</small></span></a><span class="course-location">模块 03 <i>/</i> 项目 04 · 模块、包与库</span><div class="header-actions"><span id="totalProgress">准备任务</span><button id="guideBtn" class="light-button">使用指南 ?</button><a href="../../../chapters/03-functions_modules.html#functions-project-four-lab">返回教材 ↗</a></div></header>
+<main>
+<section class="intro"><div><p class="eyebrow">IMPORT → BUILD → REUSE → FLY</p><h1>组装你的工具箱，<span>让每次导入都起飞。</span></h1><p>切换真实 Python 文件，补全导入和工具函数。从一个模块到一个包，编排属于你的飞行任务。</p></div><div class="intro-stamp"><span>MISSION SERIES</span><b>03<span>.4</span></b><small id="lessonSummary">import · 自建模块 · 包 · 标准库 · 第三方库</small></div></section>
+<section class="experience-banner"><div><strong>先试飞：用多个模块拼出一场巡航</strong><p>航点、8 字、返航：看同一个工具包如何协作。</p></div><button id="demoBtn">▶ 参考试飞</button></section>
+<nav id="lessonNav" class="lesson-nav" aria-label="选择任务"></nav>
+<div class="lab-grid">
+<section class="code-panel" aria-labelledby="lessonTitle">
+<div class="panel-label"><span><i></i>01 / CODE CONTROL</span><span id="blankCount">0 / 0 空</span></div>
+<div class="lesson-intro"><div class="lesson-meta"><span id="lessonKicker"></span><span id="lessonNumber"></span></div><h2 id="lessonTitle"></h2><p id="lessonDescription"></p><div class="objective"><span>本关挑战</span><p id="objectiveText"></p></div></div>
+<div class="scenario-row"><label for="scenarioSelect">飞行情境</label><select id="scenarioSelect"></select><button id="dataBtn" class="text-button" aria-expanded="false">查看输入 ⌄</button></div>
+<div id="dataBox" class="data-box" hidden><p id="scenarioDescription"></p><pre id="inputData"></pre></div>
+<div id="scratchNotice" class="scratch-notice" hidden><span><b>试飞草稿 · 不计通关</b> 可自由改数字，原有练习保留。</span><button id="exitScratchBtn">返回我的填空 ↩</button></div>
+<nav id="fileNav" class="file-nav" aria-label="工程文件"></nav><div id="installPanel" class="install-panel" hidden><div><strong>练习环境安装命令</strong><small>安装到本页独立的 Python 环境</small></div><div id="installEditor"></div><p id="installStatus">填写命令，运行时真实安装随页提供的 geopy 库。</p></div><div class="editor-tab"><span><i></i><span id="activeFileName">main.py</span></span><label><input id="autoRun" type="checkbox" checked> 填空后自动预演</label></div>
+<div id="editor" class="editor" role="group" aria-label="Python代码填空"></div>
+<div class="editor-help"><kbd>Tab</kbd> 下一空 <span>·</span> 绿色数值空可以自由探索 <span>·</span> 未填空在预演中使用参考值</div>
+<div id="feedback" class="feedback" role="status" aria-live="polite"></div><div id="hintBox" class="hint-box" hidden></div>
+<div class="code-actions"><button id="runBtn" class="run-button">▶ 运行完整工程 <kbd>Ctrl ↵</kbd></button><button id="hintBtn" class="light-button">给我提示</button><button id="resetBtn" class="reset-button" aria-label="清空本关填空" title="清空本关填空">↺</button><button id="answerBtn" class="text-button">参考答案</button></div>
+</section>
+<section class="flight-panel" aria-labelledby="flightTitle">
+<div class="panel-label"><span><i></i>02 / FLIGHT THEATRE <em id="flightTitle">飞行剧场</em></span><span id="previewMode">等待输入</span></div>
+<div class="scene"><div class="scene-top"><div><span class="tiny-label">VIRTUAL TRAINING ARENA</span><h3>UAV–07 <small>SIM</small></h3></div><span id="flightBadge" class="flight-badge"><i></i>悬停待命</span></div><canvas id="droneCanvas" role="img" aria-label="三维无人机飞行演示，展示坐标移动、升降、自旋和曲线航迹"></canvas><canvas id="routeMap" class="route-map" width="148" height="108" role="img" aria-label="俯视航迹"></canvas><div class="scene-bottom"><span id="sceneCaption">从原点上方 10 m 开始，准备第一条指令。</span><button id="cameraBtn" aria-label="恢复模型视角" title="恢复视角">⤾</button></div></div>
+<div class="engine-status"><i></i><span id="engineStatus">Python 运行环境就绪后，代码将按真实导入顺序执行。</span></div><div class="scoreboard"><div><span>当前文件</span><strong id="scoreValue">—</strong></div><div><span>当前模块结果</span><code id="resultValue">等待计算</code></div><div><span>已加载模块</span><strong id="depthValue">0</strong></div></div>
+<div class="telemetry"><div><span>X 坐标</span><strong id="xValue">0<em>m</em></strong></div><div><span>Y 坐标</span><strong id="yValue">0<em>m</em></strong></div><div><span>Z 高度</span><strong id="zValue">0<em>m</em></strong></div><div><span>累计航向</span><strong id="yawValue">0<em>°</em></strong></div></div>
+<div class="scene-settings"><div><button data-view="iso" class="active">立体</button><button data-view="top">俯视航线</button><button data-view="front">正面</button></div><label><input id="motionEnabled" type="checkbox" checked> 动态演示</label></div>
+<div class="flight-controls"><div class="mission-progress"><span id="actionProgress">等待下发指令</span><div><i id="flightProgress"></i></div></div><select id="speedSelect" aria-label="动画回放速度"><option value="1">1×</option><option value="2">2×</option><option value="0.5">0.5×</option></select><button id="pauseBtn" disabled>暂停</button><button id="replayBtn" disabled>↻ 重飞</button></div>
+<div class="trace-controls"><button id="prevTraceBtn" aria-label="查看上一个执行记录">←</button><select id="traceSelect" aria-label="Python实际模块执行记录"><option>等待执行记录</option></select><button id="nextTraceBtn" aria-label="查看下一个执行记录">→</button><button id="followBtn">跟随飞行</button></div><div id="callStack" class="call-stack">运行后观察真实的模块加载顺序。</div><div id="importGraph" class="import-graph"><p>导入一个模块，点亮一个工具。</p></div>
+<div class="binding-panel"><div class="section-heading"><span>导入的名字与计算结果</span><button id="sourceBtn" class="source-button" title="切换到这一步所在的文件"><code id="currentFunction">等待导入</code> ↗</button></div><div id="bindings" class="bindings"><p class="empty-state">运行代码后，这里会显示本步实际能读取的变量。</p></div><p id="bindingNote">观察真实模块加载、缓存复用、名称绑定与计算结果。</p></div>
+<div class="queue-panel"><div class="section-heading"><span>飞行指令队列</span><small id="queueCount">0 条指令</small></div><div id="commandQueue" class="command-queue"><p class="empty-state">你的下一次调用，将变成这里的一段航迹。</p></div></div>
+<div class="console"><div class="console-head"><span><i></i>PYTHON OUTPUT</span><small id="consoleStatus">READY</small></div><pre id="consoleOutput" role="log" aria-live="off"># 每次预演都会实际运行当前 Python 代码。
+# 完成一个空格，看看参数带来了什么变化。</pre></div>
+</section>
+</div>
+<section class="concept-bar"><span>↳</span><p id="conceptText"></p><button id="nextBtn">下一关 →</button></section>
+<footer><span>模块三 · 项目四 · 无人机“传感器工具箱”</span><span>飞行采用压缩时间的教学仿真，动作来自代码实际算出的数据。</span><button id="downloadBtn" class="text-button">↓ 下载本关工程 ZIP</button></footer>
+</main>
+<dialog id="guideDialog"><div class="dialog-head"><div><p class="eyebrow">BRIEFING / 起飞前简报</p><h2>搭好工具包，再设计一场飞行。</h2></div><button class="close-dialog" aria-label="关闭使用指南">×</button></div><ol class="guide-list"><li><b>从文件结构开始。</b> 左侧文件页签表示真实工程文件。main.py 是入口，工具模块和包内模块都可以切换填写。</li><li><b>补一空，运行整套工程。</b> 已填写内容实际执行；未填部分在预演中暂用参考值。错误的模块名、成员名或路径会产生真实 Python 错误。</li><li><b>用导入的函数控制动作。</b> 交换 import、as、from 的写法，比较名字的用法；改变数值，设计自旋、升降、8 字、航点与返航。</li><li><b>观察真实导入顺序。</b> 右侧显示模块加载、重复导入缓存和模块变量快照。点击文件名可跳转源文件，查看执行记录会暂停飞机。</li><li><b>体验真实第三方库。</b> 第 9、10 关在网页内安装随页提供的 geopy，再验证导入、版本与距离计算。电脑终端的安装命令也会随工程下载。</li></ol><div class="guide-note">每轮从原点上方 10 m 开始，用压缩时间回放计算结果。Python、库与运行资源随页提供，首次加载比前几个实验大；已填内容会保存在当前浏览器。参考试飞使用独立草稿，不计通关也不覆盖原有填写。动态演示可以关闭，代码工程可下载后在电脑上运行。</div><a href="https://pyodide.org/" target="_blank" rel="noopener">浏览器 CPython 引擎 · Pyodide ↗</a></dialog>
+<dialog id="answerDialog"><div class="dialog-head"><div><p class="eyebrow">REFERENCE / 对照与理解</p><h2>看懂计算，再探索另一种飞法。</h2></div><button class="close-dialog" aria-label="关闭参考答案">×</button></div><p class="answer-intro">数值空支持范围内的不同答案。参考值只演示其中一种飞行方式。</p><div id="answerContent"></div><div class="dialog-actions"><button id="fillAnswerBtn" class="run-button">填入参考答案并运行</button><button class="close-dialog light-button">继续自己填写</button></div></dialog>
+<div id="toast" class="toast" hidden role="status"></div>
+<script type="module" src="app.js"></script>
+</body></html>

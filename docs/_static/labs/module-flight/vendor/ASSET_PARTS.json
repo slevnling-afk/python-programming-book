@@ -1,0 +1,132 @@
+{
+  "assets": [
+    {
+      "path": "pyodide/pyodide.asm.wasm",
+      "bytes": 8647609,
+      "sha256": "615172c6b2f5efe53e41d0201a98eb37c1f3aa7675d11cb06b6079b3a6b2bef5",
+      "source": "https://registry.npmjs.org/pyodide/-/pyodide-0.29.0.tgz",
+      "mime": "application/wasm",
+      "parts": [
+        {
+          "path": "pyodide/pyodide.asm.wasm.000.bin",
+          "bytes": 524288,
+          "sha256": "b2381874d1337f7509509070dd2bafac625f48bccf96de6e2c8cecb970dde2ea"
+        },
+        {
+          "path": "pyodide/pyodide.asm.wasm.001.bin",
+          "bytes": 524288,
+          "sha256": "920b7f8639a304017736276dd2fab8e2b483707137550f60b9b81a06e5972889"
+        },
+        {
+          "path": "pyodide/pyodide.asm.wasm.002.bin",
+          "bytes": 524288,
+          "sha256": "eaa12351fc0645569012da18cd519eafd555ff25ae67daab26c18b9a8cf7c3e3"
+        },
+        {
+          "path": "pyodide/pyodide.asm.wasm.003.bin",
+          "bytes": 524288,
+          "sha256": "90396045c6e7291a931d344f5a130a53f9cbcd34550a087dc60dde2e5ee5856d"
+        },
+        {
+          "path": "pyodide/pyodide.asm.wasm.004.bin",
+          "bytes": 524288,
+          "sha256": "520439d98b7450a051a0786053e9f82d6bc9438cb00a30b26c4eaf7b1974cb26"
+        },
+        {
+          "path": "pyodide/pyodide.asm.wasm.005.bin",
+          "bytes": 524288,
+          "sha256": "a345b4b78c55accf439cd44a7d46947ed41ecd85057231f06f1b67bd4c31fbf1"
+        },
+        {
+          "path": "pyodide/pyodide.asm.wasm.006.bin",
+          "bytes": 524288,
+          "sha256": "e10c811013e2d5b76a396f703618353bde70980b98b5e6710612765ce407e02f"
+        },
+        {
+          "path": "pyodide/pyodide.asm.wasm.007.bin",
+          "bytes": 524288,
+          "sha256": "b4b362bd8d036036d05d4880c8fc511fec7d0bf918e2643efa6d300b20ccfdca"
+        },
+        {
+          "path": "pyodide/pyodide.asm.wasm.008.bin",
+          "bytes": 524288,
+          "sha256": "e7a736be801dda1a39e24efecc6ded8f513eec1eff48c44a0769a593a73ef411"
+        },
+        {
+          "path": "pyodide/pyodide.asm.wasm.009.bin",
+          "bytes": 524288,
+          "sha256": "94e7ac6b7399b7791174dfde5d520ab5ee48b4acb759b0f17984befcaa0b5f6f"
+        },
+        {
+          "path": "pyodide/pyodide.asm.wasm.010.bin",
+          "bytes": 524288,
+          "sha256": "8c674f11749d265f5fd5d336d86985d04a0c9ebc39332859a5f5a25438c395af"
+        },
+        {
+          "path": "pyodide/pyodide.asm.wasm.011.bin",
+          "bytes": 524288,
+          "sha256": "7001328ff81d1ab5017e5aeb3664f3d1bd39a9e700718bde30467e8a65043b2a"
+        },
+        {
+          "path": "pyodide/pyodide.asm.wasm.012.bin",
+          "bytes": 524288,
+          "sha256": "d9dc604cdb0de8ed10d5c63491c8fab593a299efad48de386a7cd8ef6a367bf2"
+        },
+        {
+          "path": "pyodide/pyodide.asm.wasm.013.bin",
+          "bytes": 524288,
+          "sha256": "534b92b85f9d2b058c9c732e8f568749b371abbe6ca3898310c55f889e5c0d22"
+        },
+        {
+          "path": "pyodide/pyodide.asm.wasm.014.bin",
+          "bytes": 524288,
+          "sha256": "5f9578f78a5ed8b66778054f76a0d2d5cf12d81cb9e2cd0b7ccea9f55f19653e"
+        },
+        {
+          "path": "pyodide/pyodide.asm.wasm.015.bin",
+          "bytes": 524288,
+          "sha256": "c67f37702f89dce4767973dff14583614437229b1eeeee2e80a781ee2833fd19"
+        },
+        {
+          "path": "pyodide/pyodide.asm.wasm.016.bin",
+          "bytes": 259001,
+          "sha256": "f7c87026fd41f13321f0da627081bc093d9b941c3efc9b6f7630a54a01fa2ccc"
+        }
+      ]
+    },
+    {
+      "path": "pyodide/python_stdlib.zip",
+      "bytes": 2423414,
+      "sha256": "e389fbdc394a00d31ff0624386c9e3e52e04727130ac73597a99c477afe4f1ca",
+      "source": "https://registry.npmjs.org/pyodide/-/pyodide-0.29.0.tgz",
+      "mime": "application/zip",
+      "parts": [
+        {
+          "path": "pyodide/python_stdlib.zip.000.bin",
+          "bytes": 524288,
+          "sha256": "c3e54e23072b4da01841ddbd8b4fd5a700640c829ec4141536a4703efd7fd25a"
+        },
+        {
+          "path": "pyodide/python_stdlib.zip.001.bin",
+          "bytes": 524288,
+          "sha256": "b2e3d7f9b1664766e5fb4c597a4214242ee196cd5913186e13f36be24a6af758"
+        },
+        {
+          "path": "pyodide/python_stdlib.zip.002.bin",
+          "bytes": 524288,
+          "sha256": "04f6ec5b0187c3299d263a1f9957654eae1ca6f4a36dd4c79d805acb26c58e26"
+        },
+        {
+          "path": "pyodide/python_stdlib.zip.003.bin",
+          "bytes": 524288,
+          "sha256": "c94ac4fd83858af20aefc7d6b7b92c6260dde677f766a1e2c6bda5840b671ae8"
+        },
+        {
+          "path": "pyodide/python_stdlib.zip.004.bin",
+          "bytes": 326262,
+          "sha256": "2cb210458f332660b97bdc65ed3118d5fdfaf1a800eab6c7c83756dee3c4231b"
+        }
+      ]
+    }
+  ]
+}

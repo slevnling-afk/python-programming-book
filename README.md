@@ -97,3 +97,12 @@ xelatex python_programming_book.tex
 10 个代码填空任务覆盖局部变量、global、内嵌作用域、lambda 与递归。实际 Python 计算驱动升降、自旋、航点巡航、整圈与半圈 8 字、环绕和返航，并展示局部/全局/外层变量快照与递归调用层级。参考试飞不计通关且保留原稿。
 
 源码：`docs/_static/labs/scope-flight/`。本地 Skulpt 运行库随网站发布。验证：`node tests/scope-flight-runtime.cjs` 与 `node tests/scope-flight-motion.cjs`。Windows 受限目录可给 Node 添加 `--preserve-symlinks --preserve-symlinks-main`。
+
+
+## 模块三 · 项目四交互实训
+
+[进入无人机模块组装飞行实验室](https://slevnling-afk.github.io/python-programming-book/_static/labs/module-flight/index.html)。教材项目四末尾也有入口。
+
+10 个任务、65 处填空和 22 个文件页签练习模块导入、自建模块、包、导入缓存、标准库与第三方库。主程序与模块文件真实执行，实际计算结果驱动升降、自旋、航点、8 字、环绕和返航。工程可完整下载为 ZIP。
+
+源码位于 `docs/_static/labs/module-flight/`。浏览器 CPython 运行环境 Pyodide 及 geopy 等固定版本资源随网站保存，校验与来源见 `vendor/MANIFEST.json`，许可见 vendor 文件及 wheel 内的许可文件。第三方库安装作用于网页练习环境，下载工程后可按命令在电脑上安装。运动验证：`node --preserve-symlinks --preserve-symlinks-main tests/module-flight-motion.cjs`；运行与浏览器验证见 `tests/module-flight-runtime.*`。
