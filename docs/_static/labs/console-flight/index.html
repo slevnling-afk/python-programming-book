@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#eaf1ef">
+  <meta name="description" content="填写 Python 输入与格式化代码，打印巡检简报并分阶段操控三维无人机。">
+  <title>无人机任务口令台 · Python 输入与格式化</title>
+  <link rel="stylesheet" href="../string-flight/style.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="mast">
+    <a href="../../../chapters/04-Data%20type%20operations.html#console-project-two-lab">← 返回教材</a>
+    <span>MISSION DISPATCH <i></i> 04 / 02</span>
+    <span id="progress">0 / 7 关完成</span>
+  </header>
+  <main>
+    <section class="intro">
+      <div>
+        <p class="eyebrow">地面站 / 输入与格式化输出</p>
+        <h1>无人机<span>任务口令台</span></h1>
+        <p>把输入送进 Python。简报逐项通过后，右侧无人机会执行对应的动作。</p>
+      </div>
+      <button type="button" class="primary demo" id="demo">▶ 动作演示 <small>预览模型与飞行</small></button>
+    </section>
+    <nav id="missions" class="missions" aria-label="选择关卡"></nav>
+    <div class="lab">
+      <section class="panel" aria-labelledby="lesson-title">
+        <div class="panel-bar"><span>01 / 任务代码</span><span id="score"></span></div>
+        <div class="brief">
+          <p class="eyebrow" id="lesson-number"></p>
+          <h2 id="lesson-title"></h2>
+          <p id="goal"></p>
+        </div>
+        <div class="scenario">
+          <label for="scenario">任务情境</label><select id="scenario"></select>
+        </div>
+        <fieldset class="input-queue">
+          <legend>键盘输入 · 依序送入 Python</legend>
+          <div id="fields"></div>
+        </fieldset>
+        <div class="code-header">
+          <span>uav_console_brief.py</span>
+          <label><input type="checkbox" id="auto" checked> 填写后自动运行</label>
+        </div>
+        <div class="code" id="editor" aria-label="Python 代码填空"></div>
+        <p class="hint" id="hint" aria-live="polite">点选空格，查看一句思路提示。</p>
+        <div class="editor-actions">
+          <button type="button" class="primary" id="run">▶ 运行代码</button>
+          <button type="button" id="hint-button">给一点提示</button>
+          <button type="button" id="clear">清空本关</button>
+        </div>
+        <p class="run-note" id="note" role="status"></p>
+      </section>
+      <section class="panel" aria-labelledby="flight-title">
+        <div class="panel-bar"><span id="flight-title">02 / 模拟飞行</span><span id="mode">等待输入</span></div>
+        <div class="scene">
+          <canvas id="aircraft" role="img" aria-label="三维无人机及飞行轨迹"></canvas>
+          <div class="scene-label"><strong>训练空域</strong><span id="action">等待飞行指令</span></div>
+          <div class="telemetry">
+            <span>X <b id="x">0.0</b> m</span><span>Y <b id="y">0.0</b> m</span>
+            <span>高度 <b id="z">10.0</b> m</span><span>航向 <b id="yaw">0</b>°</span>
+          </div>
+        </div>
+        <progress id="timeline" max="1" value="0" aria-label="飞行进度"></progress>
+        <div class="flight-tools">
+          <div class="tool-group" role="group" aria-label="观察视角">
+            <button type="button" data-view="iso" aria-pressed="true">立体</button>
+            <button type="button" data-view="top" aria-pressed="false">俯视</button>
+            <button type="button" data-view="side" aria-pressed="false">侧视</button>
+          </div>
+          <div class="tool-group">
+            <label class="speed">速度 <select id="speed" aria-label="演示速度">
+              <option value=".5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option>
+            </select></label>
+            <button type="button" id="pause" disabled>暂停</button>
+            <button type="button" id="replay" disabled>重飞</button>
+          </div>
+        </div>
+        <ol class="flight-plan" id="plan" aria-label="动作顺序"></ol>
+        <section class="results" aria-labelledby="report-title">
+          <div class="report-head">
+            <h3 id="report-title">Python 简报</h3>
+            <label><input type="checkbox" id="spaces"> 标出空格</label>
+          </div>
+          <pre id="output" tabindex="0">运行代码后，简报会显示在这里。</pre>
+          <pre id="error" hidden></pre>
+        </section>
+      </section>
+    </div>
+    <footer>课堂仿真 · P1～P4 为四个固定航点。保留小数位只改变简报显示，飞行使用原始数值。</footer>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

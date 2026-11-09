@@ -1,0 +1,36 @@
+:root {
+  --paper: #eaf1ef;
+  --card: #f9fcfa;
+  --line: #bfcfc9;
+  --ink: #153438;
+  --muted: #485e5d;
+  --dark: #10262b;
+  --orange: #9dd8c2;
+}
+.mast i { background: #1b7767; }
+.eyebrow, h1 span, .panel-bar > :last-child { color: #235f56; }
+.primary { border-color: #438674; }
+.missions { grid-template-columns: repeat(7, minmax(100px, 1fr)); }
+.missions [aria-current="step"] small { color: #b6e4ce; }
+.panel-bar { background: #e0ebe6; }
+.input-queue { margin: 0 14px 12px; padding: 5px 9px 9px; border: 1px solid var(--line); border-radius: 5px; }
+.input-queue legend { padding: 0 5px; color: #235f56; font: bold .75rem/1.5 var(--mono); }
+#fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 132px), 1fr)); gap: 6px 10px; }
+#fields label { display: grid; gap: 3px; min-width: 0; font-size: .75rem; }
+#fields input { min-width: 0; width: 100%; padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px; background: #fff; font: .84rem/1.4 var(--mono); }
+#fields b { color: #235f56; margin-right: .3rem; }
+.code { max-height: 350px; }
+.code-comment { color: #9dc5b1; }
+.code input { border-color: #8bddb9; color: #baf2d8; }
+.code input::placeholder { color: #a9d9c7; }
+.hint { background: #e8f1ed; }
+.report-head { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+.report-head label { font-size: .77rem; white-space: nowrap; }
+.results #output { background: #10262b; color: #e9f4ed; font: .82rem/1.55 var(--mono); white-space: pre; overflow: auto; min-height: 4.5rem; max-height: 13rem; }
+.flight-plan [aria-current="step"] { background: #c4e9db; border-color: #5d9281; }
+#timeline { accent-color: #428976; }
+#timeline::-webkit-progress-value { background: #428976; }
+@media (max-width: 500px) {
+  .input-queue { margin-inline: 10px; }
+  #fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
