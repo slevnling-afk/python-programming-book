@@ -1,4 +1,4 @@
-import { lessons } from "./lessons.js";
+import { lessons } from "./lessons.js?v=2";
 import { DroneScene } from "../module-flight/drone.js";
 import { runPython, cancelPython } from "../module-flight/runtime.js";
 
@@ -10,8 +10,8 @@ const waypoints = new Map([
   ["P4", [-13, 15]],
 ]);
 const storageKey = "pythonbook-string-flight-v1";
-const idleHint = "点选任意填空查看提示，按 Enter 试飞。";
-const idleNote = "试飞会暂用参考值补齐空白。所有空格正确并成功运行后，本关才会记为完成。";
+const idleHint = "点选任意填空，查看一句提示。";
+const idleNote = "按顺序填空，先观察中间结果。填完后，运行代码并核对飞行结果。";
 const placeholder = /\{\{(\w+)\}\}/g;
 
 let saved = {};
@@ -28,6 +28,7 @@ let revision = 0;
 let pending;
 let currentPlan = [];
 let activeCommand = -1;
+let hintedInput;
 let projectOnMap = () => [56, 44];
 
 const currentLesson = () => lessons[lessonIndex];
@@ -78,21 +79,11 @@ function cleanToken(kind, text) {
   return null;
 }
 
-function isCorrect(key) {
-  const [kind, answer, , alternatives = []] = currentLesson().blanks[key];
-  const token = cleanToken(kind, currentAnswers()[key] || "");
-  return token !== null && [answer, ...alternatives].some(value => cleanToken(kind, value) === token);
-}
-
 function updateScore() {
   const keys = Object.keys(currentLesson().blanks);
-  const correct = keys.filter(isCorrect).length;
-  ui.score.textContent = correct + " / " + keys.length + " 空正确";
+  const filled = keys.filter(key => currentAnswers()[key]?.trim()).length;
+  ui.score.textContent = filled + " / " + keys.length + " 空已填";
   ui.progress.textContent = completed.size + " / " + lessons.length + " 关完成";
-  for (const input of ui.editor.querySelectorAll("input")) {
-    input.dataset.correct = String(isCorrect(input.dataset.blank));
-    input.removeAttribute("aria-invalid");
-  }
   for (const [index, button] of [...ui.missions.children].entries()) {
     const number = String(index + 1).padStart(2, "0");
     button.firstChild.textContent = number + (completed.has(index) ? " ✓" : "");
@@ -112,7 +103,7 @@ function buildEditor() {
     let position = 0;
     for (const match of line.matchAll(placeholder)) {
       const key = match[1];
-      const [, answer, hint] = definition[key];
+      const [kind, hint] = definition[key];
       const ordinal = keys.indexOf(key) + 1;
       const input = document.createElement("input");
       input.dataset.blank = key;
@@ -123,8 +114,9 @@ function buildEditor() {
       input.setAttribute("autocapitalize", "off");
       input.spellcheck = false;
       input.maxLength = 40;
-      input.style.width = Math.max(7, answer.length + 3) + "ch";
+      input.style.width = { method: "14ch", str: "10ch", op: "7ch", int: "7ch" }[kind];
       input.addEventListener("focus", () => {
+        hintedInput = input;
         ui.hint.textContent = "第 " + ordinal + " 空 · " + hint;
       });
       input.addEventListener("input", () => {
@@ -291,25 +283,24 @@ function showError(title, message, line) {
   }
 }
 
-async function execute(demo = false) {
+async function execute() {
   invalidate();
   const run = revision;
-  let missing = 0;
+  const lesson = currentLesson();
+  const [, data] = lesson.scenarios[scenarioIndex];
+  const lines = sourceTemplate().split("\n");
+  const tokens = {};
   let problem;
-  const source = sourceTemplate().replace(placeholder, (_, key) => {
-    const [kind, answer] = currentLesson().blanks[key];
-    const value = demo ? "" : (currentAnswers()[key] || "").trim();
-    if (!value) {
-      missing++;
-      return answer;
-    }
+  for (const [key, [kind]] of Object.entries(lesson.blanks)) {
+    const value = currentAnswers()[key]?.trim();
+    if (!value) continue;
     const token = cleanToken(kind, value);
     if (token === null) {
-      problem ??= { key, kind };
-      return answer;
+      problem = { key, kind };
+      break;
     }
-    return token;
-  });
+    tokens[key] = token;
+  }
   if (problem) {
     const input = ui.editor.querySelector('[data-blank="' + problem.key + '"]');
     const instruction = {
@@ -322,9 +313,17 @@ async function execute(demo = false) {
     input.setAttribute("aria-invalid", "true");
     return;
   }
-  const mode = demo ? "参考试飞" : missing ? "填空预演" : "完整运行";
-  const context = demo ? "正在用本关参考答案演示，填空保持原样。"
-    : missing ? "临时用参考值补齐 " + missing + " 空，本次为预演。" : "正在运行你的完整代码。";
+  const firstOpenLine = lines.findIndex(line =>
+    [...line.matchAll(placeholder)].some(match => !Object.hasOwn(tokens, match[1])));
+  const partial = firstOpenLine !== -1;
+  const runnable = partial ? lines.slice(0, firstOpenLine) : lines;
+  const source = runnable.join("\n").replace(placeholder, (_, key) => tokens[key]);
+  if (partial && !runnable.some(line => [...line.matchAll(placeholder)].length)) {
+    setStatus("等待填空", "请先补全前面第一个还未填完的语句，再运行代码。");
+    return;
+  }
+  const mode = partial ? "中间结果" : "完整运行";
+  const context = partial ? "正在运行第一个空缺语句之前的代码。" : "正在运行你的完整代码。";
   setStatus(mode + " · 准备中", context);
   const result = await runPython(source + "\n# @event result", {
     entry: "uav_log_parser.py",
@@ -344,6 +343,14 @@ async function execute(demo = false) {
     return;
   }
   ui.empty.hidden = true;
+  if (partial) {
+    const report = Object.entries(values)
+      .filter(([name]) => !Object.hasOwn(data, name))
+      .slice(-6);
+    renderReport(report);
+    setStatus(mode, "右侧显示已运行的变量。继续填空，直到代码能生成飞行指令。", "success");
+    return;
+  }
   renderReport(values.report || []);
   if (typeof values.callsign === "string") ui.callsign.textContent = values.callsign.slice(0, 24);
   try {
@@ -352,15 +359,19 @@ async function execute(demo = false) {
     showError("地面站未通过", error.message);
     return;
   }
-  if (demo || missing) {
-    setStatus(mode, context + " 右侧正在演示实际解析出的指令。", "success");
-  } else if (Object.keys(currentLesson().blanks).every(isCorrect)) {
+  const mismatch = Object.entries(lesson.targets(values, scenarioIndex, data)).find(([name, target]) => {
+    const actual = values[name];
+    return typeof target === "function"
+      ? !target(actual)
+      : JSON.stringify(actual) !== JSON.stringify(target);
+  });
+  if (!mismatch) {
     completed.add(lessonIndex);
     persist();
     updateScore();
-    setStatus("本关完成", "填空正确，Python 已生成飞行指令。可切换日志继续对照。", "success");
+    setStatus("本关完成", "本情境的解析结果符合目标。可切换日志继续对照。", "success");
   } else {
-    setStatus("已运行 · 继续核对", "右侧显示本次代码的实际结果。还有填空与本关目标不符。", "success");
+    setStatus("已运行 · 继续核对", "请核对变量 " + mismatch[0] + " 的结果，再查看对应填空的提示。");
   }
 }
 
@@ -398,26 +409,19 @@ ui.clear.addEventListener("click", () => {
   updateScore();
   ui.hint.textContent = idleHint;
 });
-ui.answer.addEventListener("click", () => {
-  ui["answer-list"].replaceChildren(...Object.values(currentLesson().blanks).map(([, answer, hint]) => {
-    const item = makeElement("li");
-    item.append(makeElement("code", answer), " · " + hint);
-    return item;
-  }));
-  ui["answer-dialog"].showModal();
-});
-ui.fill.addEventListener("click", () => {
-  answers[lessonIndex] = Object.fromEntries(Object.entries(currentLesson().blanks)
-    .map(([key, [, answer]]) => [key, answer]));
-  persist();
-  buildEditor();
-  updateScore();
-  ui["answer-dialog"].close();
-  execute();
+ui["show-hint"].addEventListener("click", () => {
+  const inputs = [...ui.editor.querySelectorAll("input")];
+  const input = hintedInput?.isConnected
+    ? hintedInput : (inputs.find(field => !field.value.trim()) || inputs[0]);
+  input?.focus();
 });
 function demoFlight() {
-  selectLesson(lessons.length - 1);
-  execute(true);
+  invalidate();
+  startFlight(translateFlight([
+    ["altitude", 28], ["move", "P2"], ["spin", 1, "right"],
+    ["figure8", 0.5], ["return", 20],
+  ]));
+  setStatus("动作演示", "这是一段独立的动作预览。填写左侧代码，生成你自己的飞行指令。");
 }
 ui.demo.addEventListener("click", demoFlight);
 ui.pause.addEventListener("click", () => scene.setPaused(!scene.state.paused));

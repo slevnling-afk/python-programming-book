@@ -21,7 +21,7 @@
         <h1>巡检日志<span>飞行台</span></h1>
         <p>在代码里拆分、清洗和判断日志。运行后的 Python 结果会变成右侧的飞行动作。</p>
       </div>
-      <button type="button" class="primary demo" id="demo">▶ 参考试飞 <small>体验综合巡检</small></button>
+      <button type="button" class="primary demo" id="demo">▶ 动作演示 <small>预览飞行与操作</small></button>
     </section>
     <nav class="missions" id="missions" aria-label="选择练习关卡"></nav>
     <div class="lab">
@@ -37,16 +37,16 @@
         </div>
         <div class="code-header">
           <span>uav_log_parser.py</span>
-          <label><input type="checkbox" id="auto" checked> 填空后自动试飞</label>
+          <label><input type="checkbox" id="auto" checked> 填空后自动运行</label>
         </div>
         <div class="code" id="editor" aria-label="Python 代码与填空"></div>
-        <p class="hint" id="hint" aria-live="polite">点选任意填空查看提示，按 Enter 试飞。</p>
+        <p class="hint" id="hint" aria-live="polite">点选任意填空，查看一句提示。</p>
         <div class="editor-actions">
           <button type="button" class="primary" id="run">▶ 运行代码</button>
-          <button type="button" id="answer">参考答案</button>
+          <button type="button" id="show-hint">给一点提示</button>
           <button type="button" id="clear">清空本关</button>
         </div>
-        <p class="run-note" id="run-note" role="status">试飞会暂用参考值补齐空白。所有空格正确并成功运行后，本关才会记为完成。</p>
+        <p class="run-note" id="run-note" role="status">按顺序填空，先观察中间结果。填完后，运行代码并核对飞行结果。</p>
       </section>
       <section class="panel flight-panel" aria-labelledby="flight-title">
         <div class="panel-bar"><span id="flight-title">02 / 飞行演示</span><span id="mode">等待试飞</span></div>
@@ -90,12 +90,6 @@
     </div>
     <footer>课堂仿真 · 航点 P1、P2、P3、P4 代表场地中的四个位置。首次运行需加载浏览器内的 Python 环境。</footer>
   </main>
-  <dialog id="answer-dialog">
-    <form method="dialog"><button type="submit" class="close" aria-label="关闭">×</button></form>
-    <h2>本关参考答案</h2>
-    <ol id="answer-list"></ol>
-    <button type="button" class="primary" id="fill">填入并运行</button>
-  </dialog>
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=2"></script>
 </body>
 </html>

@@ -58,7 +58,6 @@ input[type="checkbox"] { accent-color: #efaa60; }
 .code-line.error-line { background: #66352f; }
 .code input { background: #253943; border: 1px dashed #ffad67; border-radius: 4px; color: #ffdd9f; padding: 1px 5px; margin-inline: 1px; text-align: center; line-height: 1.35; min-height: 24px; }
 .code input::placeholder { color: #e8ba93; }
-.code input[data-correct="true"] { border-style: solid; border-color: #8bdac2; color: #b4f1df; }
 .code input[aria-invalid="true"] { border-style: solid; border-color: #fca59e; color: #ffd3cd; }
 .hint { margin: 0; padding: 8px 14px; min-height: 40px; background: #f3eadb; font-size: .83rem; }
 .editor-actions { padding: 12px 14px 0; }
@@ -97,11 +96,6 @@ progress::-webkit-progress-value { background: #b55f24; }
 .results pre { margin: 6px 0 0; padding: 7px; background: #f9e7df; color: #792c21; white-space: pre-wrap; overflow-wrap: anywhere; font: .79rem/1.55 var(--mono); }
 .results p { margin: 5px 0 0; }
 footer { padding-block: 14px 20px; font-size: .78rem; color: var(--muted); }
-dialog { width: min(92vw, 520px); max-height: 82vh; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); }
-dialog::backdrop { background: #15232b99; }
-dialog code { color: #8e4017; font: bold .9em var(--mono); }
-dialog li { margin-block: 6px; }
-.close { float: right; }
 @media (max-width: 880px) {
   .lab { grid-template-columns: 1fr; }
   .scene { height: 350px; }
