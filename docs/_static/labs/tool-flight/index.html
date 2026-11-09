@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f1eee4">
+  <meta name="description" content="填写内置函数、数学、随机与三角计算，用真实 Python 结果控制无人机。">
+  <title>无人机数据自检飞行台 · 内置函数与常用库</title>
+  <link rel="stylesheet" href="../string-flight/style.css?v=3">
+  <link rel="stylesheet" href="../console-flight/style.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="mast">
+    <a href="../../../chapters/03-functions_modules.html#tools-project-six-lab">← 返回教材</a>
+    <span>DATA CHECK FLIGHT <i></i> 03 / 06</span>
+    <span id="progress">0 / 9 关完成</span>
+  </header>
+  <main>
+    <section class="intro">
+      <div>
+        <p class="eyebrow">无人机调度 / 内置函数与常用库</p>
+        <h1>无人机<span>数据自检飞行台</span></h1>
+        <p>清点设备、抽签、算坐标。逐空填写，让实际计算结果决定下一段飞行。</p>
+      </div>
+    </section>
+    <nav id="missions" class="missions" aria-label="选择自检任务"></nav>
+    <div class="lab">
+      <section class="panel" aria-labelledby="lesson-title">
+        <div class="panel-bar"><span>01 / 任务代码</span><span id="score"></span></div>
+        <div class="brief">
+          <p class="eyebrow" id="lesson-number"></p>
+          <h2 id="lesson-title"></h2>
+          <p id="goal"></p>
+        </div>
+        <div class="scenario">
+          <label for="scenario">任务情境</label><select id="scenario"></select>
+        </div>
+        <fieldset class="input-queue" id="parameters" hidden>
+          <legend>任务参数 · 可修改再试飞</legend>
+          <div id="fields"></div>
+        </fieldset>
+        <div class="code-header">
+          <span>uav_tool_check.py</span>
+          <label><input type="checkbox" id="auto" checked> 填空后自动运行</label>
+        </div>
+        <div class="code" id="editor" aria-label="Python 代码与填空"></div>
+        <p class="hint" id="hint" aria-live="polite">点选任意空格，查看一句思路提示。</p>
+        <div class="editor-actions">
+          <button type="button" class="primary" id="run">▶ 运行代码</button>
+          <button type="button" id="hint-button">给一点提示</button>
+          <button type="button" id="clear">清空本关</button>
+        </div>
+        <p class="run-note" id="note" role="status">按顺序填写，观察本空的结果和对应动作。</p>
+      </section>
+      <section class="panel flight-panel" aria-labelledby="flight-title">
+        <div class="panel-bar"><span id="flight-title">02 / 模拟飞行</span><span id="mode">等待填写</span></div>
+        <div class="flight-link" id="flight-link" aria-live="polite">
+          <strong id="link-step">等待代码结果</strong>
+          <code id="link-value" hidden></code>
+          <p id="link-effect">按代码顺序填空，看这一步的 Python 结果怎样影响飞行。</p>
+        </div>
+        <div class="scene">
+          <canvas id="aircraft" role="img" aria-label="三维无人机及飞行轨迹"></canvas>
+          <div class="scene-label"><strong>自检训练场</strong><span id="action">等待飞行指令</span></div>
+          <span class="axis-label">X 向东 · Y 向北</span>
+          <div class="telemetry">
+            <span>X <b id="x">0.0</b> m</span><span>Y <b id="y">0.0</b> m</span>
+            <span>高度 <b id="z">10.0</b> m</span><span>航向 <b id="yaw">0</b>°</span>
+          </div>
+        </div>
+        <progress id="timeline" max="1" value="0" aria-label="飞行动画进度"></progress>
+        <div class="flight-tools">
+          <div class="tool-group" role="group" aria-label="观察视角">
+            <button type="button" data-view="iso" aria-pressed="true">立体</button>
+            <button type="button" data-view="top" aria-pressed="false">俯视</button>
+            <button type="button" data-view="side" aria-pressed="false">侧视</button>
+          </div>
+          <div class="tool-group">
+            <label class="speed">速度 <select id="speed" aria-label="演示速度">
+              <option value=".5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option>
+            </select></label>
+            <button type="button" id="pause" disabled>暂停</button>
+            <button type="button" id="replay" disabled>重播动作</button>
+          </div>
+        </div>
+        <ol class="flight-plan" id="plan" aria-label="本次飞行指令"></ol>
+        <section class="results" aria-labelledby="report-title">
+          <h3 id="report-title">Python 计算记录</h3>
+          <pre id="output" tabindex="0">运行代码后，这里会显示计算过程。</pre>
+          <pre id="error" hidden></pre>
+        </section>
+      </section>
+    </div>
+    <footer>课堂仿真。P1～P4 是训练航点。坐标原点是起点，X 正向为东、Y 正向为北，方向角从正东逆时针计。</footer>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

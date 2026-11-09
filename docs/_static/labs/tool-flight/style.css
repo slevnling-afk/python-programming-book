@@ -1,0 +1,23 @@
+:root {
+  --paper: #f1eee4;
+  --card: #fffcf4;
+  --line: #d0c8b3;
+  --ink: #26332c;
+  --muted: #555f50;
+  --dark: #162d29;
+  --orange: #edc57f;
+}
+.mast i { background: #8d5c23; }
+.eyebrow, h1 span, .panel-bar > :last-child, .input-queue legend, #fields b { color: #805321; }
+.primary { border-color: #a67843; }
+.missions { grid-template-columns: repeat(9, minmax(98px, 1fr)); }
+.missions [aria-current="step"] small { color: #f4d698; }
+.panel-bar, .hint, .flight-link { background: #ebe5d5; }
+.flight-plan [aria-current="step"] { background: #f7e4b9; border-color: #a68048; }
+.input-queue[hidden] { display: none; }
+#fields { grid-template-columns: repeat(auto-fit, minmax(min(100%, 148px), 1fr)); }
+.code input { border-color: #d3bf8f; color: #fae8bf; }
+.code input::placeholder { color: #d3c3a1; }
+.code-comment { color: #a9c9af; }
+.axis-label { position: absolute; top: 13px; right: 13px; font: .72rem/1.6 var(--mono); color: #dde7da; pointer-events: none; }
+.results #output { background: #162d29; }
