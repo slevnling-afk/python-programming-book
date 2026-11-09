@@ -1,0 +1,28 @@
+:root {
+  --paper: #e9eff4;
+  --card: #fbfcff;
+  --line: #c6d2e0;
+  --ink: #1c3048;
+  --muted: #496077;
+  --dark: #102236;
+  --orange: #b6d7ff;
+}
+.mast i { background: #376897; }
+.eyebrow, h1 span, .panel-bar > :last-child { color: #305b85; }
+.primary { border-color: #527ca7; }
+.missions { grid-template-columns: repeat(8, minmax(105px, 1fr)); }
+.missions [aria-current="step"] small { color: #b6d7ff; }
+.panel-bar, .hint, .flight-link { background: #e0ebf8; }
+.flight-plan [aria-current="step"] { background: #d3e5ff; border-color: #6289b0; }
+.input-queue[hidden] { display: none; }
+#fields { grid-template-columns: repeat(auto-fit, minmax(min(100%, 145px), 1fr)); }
+.input-queue legend, #fields b { color: #305b85; }
+.code input { border-color: #9bc7ff; color: #d3e5ff; }
+.code input::placeholder { color: #aecce8; }
+.code-comment { color: #a6c9b9; }
+.events { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 7px 0; }
+.events:empty { display: none; }
+.events li { display: grid; padding: 4px 8px; border: 1px solid #b6cde5; border-radius: 5px; background: #edf4fc; }
+.events strong { color: #305b85; font-size: .74rem; }
+.events code { font: .75rem/1.5 var(--mono); overflow-wrap: anywhere; }
+.results #output { background: #102236; }
