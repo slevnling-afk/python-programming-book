@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f3e9">
+  <meta name="description" content="把字符串处理写进巡检日志，让真实 Python 运算结果指挥三维无人机。">
+  <title>巡检日志飞行台 · 字符串交互实训</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="mast">
+    <a href="../../../chapters/04-Data%20type%20operations.html#strings-project-one-lab">← 返回教材</a>
+    <span>PYTHON FIELD LAB <i></i> 04 / 01</span>
+    <span id="progress">0 / 9 关完成</span>
+  </header>
+  <main>
+    <section class="intro">
+      <div>
+        <p class="eyebrow">无人机巡检 / 字符串处理基础</p>
+        <h1>巡检日志<span>飞行台</span></h1>
+        <p>在代码里拆分、清洗和判断日志。运行后的 Python 结果会变成右侧的飞行动作。</p>
+      </div>
+      <button type="button" class="primary demo" id="demo">▶ 参考试飞 <small>体验综合巡检</small></button>
+    </section>
+    <nav class="missions" id="missions" aria-label="选择练习关卡"></nav>
+    <div class="lab">
+      <section class="panel editor-panel" aria-labelledby="lesson-title">
+        <div class="panel-bar"><span>01 / 代码填空</span><span id="score"></span></div>
+        <div class="brief">
+          <p class="eyebrow" id="concepts"></p>
+          <h2 id="lesson-title"></h2>
+          <p id="brief"></p>
+        </div>
+        <div class="scenario">
+          <label for="scenario">巡检日志</label><select id="scenario"></select>
+        </div>
+        <div class="code-header">
+          <span>uav_log_parser.py</span>
+          <label><input type="checkbox" id="auto" checked> 填空后自动试飞</label>
+        </div>
+        <div class="code" id="editor" aria-label="Python 代码与填空"></div>
+        <p class="hint" id="hint" aria-live="polite">点选任意填空查看提示，按 Enter 试飞。</p>
+        <div class="editor-actions">
+          <button type="button" class="primary" id="run">▶ 运行代码</button>
+          <button type="button" id="answer">参考答案</button>
+          <button type="button" id="clear">清空本关</button>
+        </div>
+        <p class="run-note" id="run-note" role="status">试飞会暂用参考值补齐空白。所有空格正确并成功运行后，本关才会记为完成。</p>
+      </section>
+      <section class="panel flight-panel" aria-labelledby="flight-title">
+        <div class="panel-bar"><span id="flight-title">02 / 飞行演示</span><span id="mode">等待试飞</span></div>
+        <div class="scene">
+          <canvas id="aircraft" role="img" aria-label="三维无人机模型与飞行轨迹"></canvas>
+          <div class="scene-label"><strong id="callsign">UAV-07</strong><span id="action">等待 Python 指令</span></div>
+          <svg class="map" id="map" viewBox="0 0 112 88" role="img" aria-label="俯视航迹">
+            <title>俯视航迹</title>
+            <path d="M56 8V80 M10 44H102" class="map-grid"/>
+            <polyline id="track" points="" class="map-track"/>
+            <circle id="position" cx="56" cy="44" r="4"/>
+          </svg>
+          <div class="telemetry" aria-label="位置与航向">
+            <span>X <b id="x">0.0</b> m</span><span>Y <b id="y">0.0</b> m</span>
+            <span>高度 <b id="z">10.0</b> m</span><span>航向 <b id="yaw">0</b>°</span>
+          </div>
+        </div>
+        <progress id="timeline" max="1" value="0" aria-label="飞行进度"></progress>
+        <div class="flight-tools">
+          <div class="tool-group" role="group" aria-label="观察视角">
+            <button type="button" data-view="iso" aria-pressed="true">立体</button>
+            <button type="button" data-view="top" aria-pressed="false">俯视</button>
+            <button type="button" data-view="side" aria-pressed="false">侧视</button>
+          </div>
+          <div class="tool-group">
+            <label class="speed">速度 <select id="speed" aria-label="演示速度">
+              <option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option>
+            </select></label>
+            <button type="button" id="pause" disabled>暂停</button>
+            <button type="button" id="replay" disabled>重飞</button>
+          </div>
+        </div>
+        <ol class="flight-plan" id="plan" aria-label="飞行指令顺序"></ol>
+        <section class="results" aria-labelledby="result-title">
+          <h3 id="result-title">Python 解析结果</h3>
+          <dl id="result"></dl>
+          <pre id="error" hidden></pre>
+          <p id="empty">运行代码后，这里会显示实际提取的字段、布尔结果和飞行指令。</p>
+        </section>
+      </section>
+    </div>
+    <footer>课堂仿真 · 航点 P1、P2、P3、P4 代表场地中的四个位置。首次运行需加载浏览器内的 Python 环境。</footer>
+  </main>
+  <dialog id="answer-dialog">
+    <form method="dialog"><button type="submit" class="close" aria-label="关闭">×</button></form>
+    <h2>本关参考答案</h2>
+    <ol id="answer-list"></ol>
+    <button type="button" class="primary" id="fill">填入并运行</button>
+  </dialog>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
