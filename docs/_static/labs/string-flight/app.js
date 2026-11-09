@@ -1,5 +1,7 @@
-import { lessons } from "./lessons.js?v=2";
-import { DroneScene } from "../module-flight/drone.js";
+import { lessons } from "./lessons.js?v=3";
+import { logAction, logStages } from "./log-stages.js";
+import { filledPrefix, flightEvidence, inspectionMove } from "./flight-link.js";
+import { DroneScene } from "../module-flight/drone.js?v=3";
 import { runPython, cancelPython } from "../module-flight/runtime.js";
 
 const ui = Object.fromEntries([...document.querySelectorAll("[id]")].map(node => [node.id, node]));
@@ -11,7 +13,7 @@ const waypoints = new Map([
 ]);
 const storageKey = "pythonbook-string-flight-v1";
 const idleHint = "点选任意填空，查看一句提示。";
-const idleNote = "按顺序填空，先观察中间结果。填完后，运行代码并核对飞行结果。";
+const idleNote = "按顺序填空，自动查看当前语句的飞行动作。点运行代码可执行整段已填写的代码。";
 const placeholder = /\{\{(\w+)\}\}/g;
 
 let saved = {};
@@ -27,6 +29,7 @@ let scenarioIndex = 0;
 let revision = 0;
 let pending;
 let currentPlan = [];
+let flightOrigin;
 let activeCommand = -1;
 let hintedInput;
 let projectOnMap = () => [56, 44];
@@ -124,10 +127,10 @@ function buildEditor() {
         completed.delete(lessonIndex);
         persist();
         updateScore();
-        invalidate();
+        invalidate(true);
         if (ui.auto.checked && Object.values(currentAnswers()).some(value => value.trim())) {
           setStatus("等待输入", "继续填写，停顿后自动试飞。");
-          pending = setTimeout(() => execute(), 650);
+          pending = setTimeout(() => execute(key), 650);
         }
       });
       text.append(line.slice(position, match.index), input);
@@ -146,7 +149,7 @@ function setStatus(mode, note, kind = "") {
   ui["run-note"].dataset.kind = kind;
 }
 
-function invalidate() {
+function invalidate(keepPosition = false) {
   revision++;
   clearTimeout(pending);
   cancelPython();
@@ -162,7 +165,9 @@ function invalidate() {
   projectOnMap = () => [56, 44];
   for (const row of ui.editor.querySelectorAll(".error-line")) row.classList.remove("error-line");
   for (const input of ui.editor.querySelectorAll("[aria-invalid]")) input.removeAttribute("aria-invalid");
-  scene.reset();
+  flightOrigin = undefined;
+  scene.reset({ keepPosition });
+  flightEvidence(ui, null, "等待代码结果", "", "右侧只执行左侧代码产生或通过校验的动作。");
   setStatus("等待试飞", idleNote);
 }
 
@@ -235,11 +240,12 @@ function updateFlight(state) {
 
 const scene = new DroneScene(ui.aircraft, { onUpdate: updateFlight });
 
-function startFlight(commands) {
+function startFlight(commands, from) {
   currentPlan = commands;
+  flightOrigin = from;
   activeCommand = -1;
   ui.plan.replaceChildren(...commands.map(command => makeElement("li", command.label)));
-  const plan = scene.play(commands);
+  const plan = scene.play(commands, { from });
   const xs = plan.points.map(point => point.x);
   const ys = plan.points.map(point => point.y);
   const cx = (Math.max(...xs) + Math.min(...xs)) / 2;
@@ -268,7 +274,8 @@ function renderReport(report) {
 function showError(title, message, line) {
   currentPlan = [];
   ui.plan.replaceChildren();
-  scene.reset();
+  scene.reset({ keepPosition: true });
+  flightEvidence(ui, null, title, "", "本次代码未通过，停止下发动作。", "blocked");
   ui.empty.hidden = true;
   ui.error.hidden = false;
   ui.error.textContent = message;
@@ -283,8 +290,8 @@ function showError(title, message, line) {
   }
 }
 
-async function execute() {
-  invalidate();
+async function execute(requestedKey) {
+  invalidate(Boolean(requestedKey));
   const run = revision;
   const lesson = currentLesson();
   const [, data] = lesson.scenarios[scenarioIndex];
@@ -313,15 +320,15 @@ async function execute() {
     input.setAttribute("aria-invalid", "true");
     return;
   }
-  const firstOpenLine = lines.findIndex(line =>
-    [...line.matchAll(placeholder)].some(match => !Object.hasOwn(tokens, match[1])));
-  const partial = firstOpenLine !== -1;
-  const runnable = partial ? lines.slice(0, firstOpenLine) : lines;
+  const { lines: runnable, partial, stage, blocked } = filledPrefix(lines, placeholder, tokens, requestedKey);
   const source = runnable.join("\n").replace(placeholder, (_, key) => tokens[key]);
-  if (partial && !runnable.some(line => [...line.matchAll(placeholder)].length)) {
+  if (!stage || blocked) {
     setStatus("等待填空", "请先补全前面第一个还未填完的语句，再运行代码。");
+    flightEvidence(ui, null, "等待前面的空格", "", "先按代码顺序补全语句，当前空才能执行。", "blocked");
     return;
   }
+  const [variable, label] = logStages[lessonIndex][stage.key];
+  flightEvidence(ui, stage, label, "", "正在执行这一行所在的 Python 语句。", "working");
   const mode = partial ? "中间结果" : "完整运行";
   const context = partial ? "正在运行第一个空缺语句之前的代码。" : "正在运行你的完整代码。";
   setStatus(mode + " · 准备中", context);
@@ -343,35 +350,44 @@ async function execute() {
     return;
   }
   ui.empty.hidden = true;
-  if (partial) {
-    const report = Object.entries(values)
-      .filter(([name]) => !Object.hasOwn(data, name))
-      .slice(-6);
-    renderReport(report);
-    setStatus(mode, "右侧显示已运行的变量。继续填空，直到代码能生成飞行指令。", "success");
-    return;
-  }
-  renderReport(values.report || []);
+  renderReport(values.report || Object.entries(values)
+    .filter(([name]) => !Object.hasOwn(data, name)).slice(-6));
   if (typeof values.callsign === "string") ui.callsign.textContent = values.callsign.slice(0, 24);
-  try {
-    startFlight(translateFlight(values.flight));
-  } catch (error) {
-    showError("地面站未通过", error.message);
-    return;
-  }
   const mismatch = Object.entries(lesson.targets(values, scenarioIndex, data)).find(([name, target]) => {
+    if (partial && !Object.hasOwn(values, name)) return false;
     const actual = values[name];
     return typeof target === "function"
       ? !target(actual)
       : JSON.stringify(actual) !== JSON.stringify(target);
   });
-  if (!mismatch) {
+  const actual = values[variable];
+  const evidence = variable + " = " + (typeof actual === "string" ? JSON.stringify(actual) : describe(actual));
+  if (mismatch) {
+    flightEvidence(ui, stage, label, evidence, "变量 " + mismatch[0] + " 未通过检查，本次保持原位。", "blocked");
+    setStatus("校验未通过", "请检查 " + mismatch[0] + " 对应的语句和提示。");
+    return;
+  }
+  const missionActions = partial ? logAction(lessonIndex, stage.key, values) : values.flight;
+  try {
+    const moves = missionActions?.length ? translateFlight(missionActions) : [inspectionMove(stage.number)];
+    const from = requestedKey && scene.state.z > 3 ? { ...scene.state } : undefined;
+    startFlight(moves, from);
+    let cause = missionActions?.length ? "根据实际结果执行：" : "本步结果通过，解锁训练校验点：";
+    if (partial && stage.key === "lines") cause = "按拆出的行数校准高度，基础 10 m，每行加 3 m：";
+    if (partial && stage.key === "times") cause = "每段扫描口令对应一圈：";
+    if (partial && stage.key === "last") cause = "按关键字出现次数选择搜索范围：";
+    flightEvidence(ui, stage, label, evidence, cause + moves.map(move => move.label).join(" → "));
+  } catch (error) {
+    showError("地面站未通过", error.message, stage.line);
+    return;
+  }
+  if (!partial) {
     completed.add(lessonIndex);
     persist();
     updateScore();
     setStatus("本关完成", "本情境的解析结果符合目标。可切换日志继续对照。", "success");
   } else {
-    setStatus("已运行 · 继续核对", "请核对变量 " + mismatch[0] + " 的结果，再查看对应填空的提示。");
+    setStatus("阶段飞行", "右侧显示本空的实际结果和动作。继续填写下一空。", "success");
   }
 }
 
@@ -396,7 +412,7 @@ ui.auto.addEventListener("change", () => {
 ui.editor.addEventListener("keydown", event => {
   if (event.key === "Enter" && !event.isComposing) {
     event.preventDefault();
-    execute();
+    execute(event.target.dataset.blank);
   }
 });
 ui.run.addEventListener("click", () => execute());
@@ -415,17 +431,8 @@ ui["show-hint"].addEventListener("click", () => {
     ? hintedInput : (inputs.find(field => !field.value.trim()) || inputs[0]);
   input?.focus();
 });
-function demoFlight() {
-  invalidate();
-  startFlight(translateFlight([
-    ["altitude", 28], ["move", "P2"], ["spin", 1, "right"],
-    ["figure8", 0.5], ["return", 20],
-  ]));
-  setStatus("动作演示", "这是一段独立的动作预览。填写左侧代码，生成你自己的飞行指令。");
-}
-ui.demo.addEventListener("click", demoFlight);
 ui.pause.addEventListener("click", () => scene.setPaused(!scene.state.paused));
-ui.replay.addEventListener("click", () => startFlight(currentPlan));
+ui.replay.addEventListener("click", () => startFlight(currentPlan, flightOrigin));
 ui.speed.addEventListener("change", () => scene.setPlaybackRate(Number(ui.speed.value)));
 const viewButtons = [...document.querySelectorAll("[data-view]")];
 for (const button of viewButtons) {
@@ -436,7 +443,6 @@ for (const button of viewButtons) {
 }
 
 selectLesson(0);
-if (location.hash === "#demo") demoFlight();
 window.addEventListener("pagehide", () => {
   clearTimeout(pending);
   revision++;

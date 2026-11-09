@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f6f3e9">
   <meta name="description" content="把字符串处理写进巡检日志，让真实 Python 运算结果指挥三维无人机。">
   <title>巡检日志飞行台 · 字符串交互实训</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
   <header class="mast">
@@ -21,7 +21,6 @@
         <h1>巡检日志<span>飞行台</span></h1>
         <p>在代码里拆分、清洗和判断日志。运行后的 Python 结果会变成右侧的飞行动作。</p>
       </div>
-      <button type="button" class="primary demo" id="demo">▶ 动作演示 <small>预览飞行与操作</small></button>
     </section>
     <nav class="missions" id="missions" aria-label="选择练习关卡"></nav>
     <div class="lab">
@@ -46,10 +45,15 @@
           <button type="button" id="show-hint">给一点提示</button>
           <button type="button" id="clear">清空本关</button>
         </div>
-        <p class="run-note" id="run-note" role="status">按顺序填空，先观察中间结果。填完后，运行代码并核对飞行结果。</p>
+        <p class="run-note" id="run-note" role="status">按顺序填空，观察本空的结果和对应动作。</p>
       </section>
       <section class="panel flight-panel" aria-labelledby="flight-title">
         <div class="panel-bar"><span id="flight-title">02 / 飞行演示</span><span id="mode">等待试飞</span></div>
+        <div class="flight-link" id="flight-link" aria-live="polite">
+          <strong id="link-step">等待代码结果</strong>
+          <code id="link-value" hidden></code>
+          <p id="link-effect">填一空，观察实际值与这一步的飞行动作。</p>
+        </div>
         <div class="scene">
           <canvas id="aircraft" role="img" aria-label="三维无人机模型与飞行轨迹"></canvas>
           <div class="scene-label"><strong id="callsign">UAV-07</strong><span id="action">等待 Python 指令</span></div>
@@ -76,7 +80,7 @@
               <option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option>
             </select></label>
             <button type="button" id="pause" disabled>暂停</button>
-            <button type="button" id="replay" disabled>重飞</button>
+            <button type="button" id="replay" disabled>重播动作</button>
           </div>
         </div>
         <ol class="flight-plan" id="plan" aria-label="飞行指令顺序"></ol>
@@ -90,6 +94,6 @@
     </div>
     <footer>课堂仿真 · 航点 P1、P2、P3、P4 代表场地中的四个位置。首次运行需加载浏览器内的 Python 环境。</footer>
   </main>
-  <script type="module" src="app.js?v=2"></script>
+  <script type="module" src="app.js?v=3"></script>
 </body>
 </html>

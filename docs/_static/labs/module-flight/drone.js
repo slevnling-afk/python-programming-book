@@ -40,11 +40,14 @@ function pathSampler(points, start, { heading = true } = {}) {
 }
 
 /** Pure trajectory builder, also used by the deterministic runtime tests. */
-export function buildFlightPlan(commands = []) {
+export function buildFlightPlan(commands = [], from) {
   if (!Array.isArray(commands)) throw new Error('飞行指令必须组成列表。');
   if (commands.length > 60) throw new Error('每次最多演示 60 条指令，请缩短航线。');
-  const segments = [], points = [{ x: 0, y: 0, z: 0 }, initialState()];
   let state = initialState(), elapsed = 0;
+  if (from) {
+    for (const key of ["x", "y", "z", "yaw"]) state[key] = from[key];
+  }
+  const segments = [], points = from ? [state] : [{ x: 0, y: 0, z: 0 }, state];
   commands.forEach((original, index) => {
     const command = { ...original };
     const action = command.action;
@@ -226,8 +229,8 @@ export class DroneScene {
     this.notify();
   }
 
-  play(commands) {
-    const plan = buildFlightPlan(commands);
+  play(commands, { from } = {}) {
+    const plan = buildFlightPlan(commands, from);
     this.plan = plan;
     this.elapsed = 0;
     this.trailPoints = [];
@@ -237,12 +240,15 @@ export class DroneScene {
     return plan;
   }
 
-  reset() {
+  reset({ keepPosition = false } = {}) {
+    const position = keepPosition
+      ? { x: this.state.x, y: this.state.y, z: this.state.z, yaw: this.state.yaw }
+      : {};
     this.plan = buildFlightPlan([]);
     this.elapsed = 0;
     this.trailPoints = [];
     this.lastTrail = null;
-    this.state = { ...this.state, ...sampleFlightPlan(this.plan, 0), playing: false, paused: false, done: false, mode: 'flying' };
+    this.state = { ...this.state, ...sampleFlightPlan(this.plan, 0), ...position, playing: false, paused: false, done: false, mode: 'flying' };
     this.notify();
   }
   replay() { return this.play(this.plan.commands); }

@@ -18,17 +18,21 @@ export const lessons = [
     ],
     blanks: {
       plus: ["op", "用哪个运算符拼接两段字符串？"],
-      times: ["op", "用哪个运算符把字符串重复多次？"],
       count: ["int", "填一个 1 到 3 的整数，重复次数就是自旋圈数。"],
+      times: ["op", "用哪个运算符把字符串重复多次？"],
       contains: ["op", "哪个运算符可以判断子串是否存在？"],
     },
     targets: (_, index) => ({
       callsign: ["UAV-07", "UAV-19"][index],
+      turns: value => Number.isInteger(value) && value >= 1 && value <= 3,
       pulses: value => typeof value === "string" && /^(SCAN ){1,3}$/.test(value),
       has_rth: index === 1,
     }),
-    code: `callsign = "UAV-" {{plus}} tail
-pulses = "SCAN " {{times}} {{count}}
+    code: `# 先登记呼号，再确定扫描口令的重复次数。
+callsign = "UAV-" {{plus}} tail
+turns = {{count}}
+pulses = "SCAN " {{times}} turns
+# 日志中出现返航口令时，优先执行返航。
 has_rth = "Return-Home" {{contains}} note
 report = [("呼号", callsign), ("扫描口令", repr(pulses)),
           ("是否含返航指令", has_rth)]
@@ -54,15 +58,17 @@ else:
       from_right: ["method", "从最右边的等号切一次，返回三段。"],
       height: ["method", "从最右边的冒号只拆一次，返回列表。"],
     },
-    targets: (_, index) => [
+    targets: (_, index, { raw }) => ({ ...[
       { mission: "MIS-A03", waypoints: ["P1", "P2"], target: "P3", height: 34 },
       { mission: "MIS-B09", waypoints: ["P4", "P3"], target: "P2", height: 18 },
-    ][index],
-    code: `lines = raw.{{lines}}()
+    ][index], lines: raw.split("\n"), csv: raw.split("\n")[1].split(":")[1] }),
+    code: `# 日志按行读取。第一行是任务编号，第二行是航点清单。
+lines = raw.{{lines}}()
 mission = lines[0].{{field}}("|")[0].strip()
 _, _, csv = lines[1].{{once}}(":")
 waypoints = csv.{{waypoints}}(",")
 _, _, target = lines[2].{{from_right}}("=")
+# 高度取自最后一个冒号后面的文本。
 height = int(lines[3].{{height}}(":", 1)[-1])
 report = [("任务编号", mission), ("航点列表", waypoints),
           ("最后一站", target), ("目标高度", height)]
@@ -88,10 +94,11 @@ flight += [("move", point) for point in waypoints + [target]]`,
       waypoints: value => value.length === 3 && value[0] === ["P1", "P4"][index]
         && value[1] === "P2" && /^P[1-4]$/.test(value[2]),
       separator: value => typeof value === "string" && value.trim().length > 0,
-      route: waypoints.join(separator),
-      csv: waypoints.join(","),
+      route: waypoints?.join(separator),
+      csv: waypoints?.join(","),
     }),
-    code: `waypoints = points + [{{target}}]
+    code: `# 把你输入的最后一站接到已有航点后面。
+waypoints = points + [{{target}}]
 separator = {{separator}}
 route = separator.{{readable}}(waypoints)
 csv = ",".{{csv}}(waypoints)
@@ -122,7 +129,8 @@ flight = [("move", point) for point in csv.split(",")]`,
       header: note.indexOf(":"),
       divider: note.lastIndexOf("|"),
     }),
-    code: `keyword = {{keyword}}
+    code: `# 记录关键字首次和末次出现的位置，判断搜索范围。
+keyword = {{keyword}}
 first = note.{{first}}(keyword)
 last = note.{{last}}(keyword)
 header = note.{{header}}(":")
@@ -145,20 +153,26 @@ else:
       ["河岸线", { route_text: "P3 ; P4 ; P2", panel: "CAMERA\tOK\t03" }],
     ],
     blanks: {
-      delimiter: ["method", "哪个方法把一个子串替换为另一个？"],
       comma: ["str", "想想下一步按什么字符拆航点，填带引号的字符。"],
+      delimiter: ["method", "哪个方法把一个子串替换为另一个？"],
       spaces: ["method", "删除中间的空格也要用替换方法。"],
-      tab: ["method", "把制表符按制表位展开为空格。"],
       size: ["int", "试试 2 到 8 的整数，观察制表位如何变化。"],
+      tab: ["method", "把制表符按制表位展开为空格。"],
     },
     targets: (_, index, { panel }) => ({
+      separator: ",",
       route: ["P2 , P1 , P4", "P3 , P4 , P2"][index],
       clean: ["P2,P1,P4", "P3,P4,P2"][index],
+      width: value => Number.isInteger(value) && value >= 2 && value <= 8,
       aligned: value => [2, 3, 4, 5, 6, 7, 8].some(width => value === expandTabs(panel, width)),
     }),
-    code: `route = route_text.{{delimiter}}(";", {{comma}})
+    code: `# 先统一分隔符，再清理航点中多余的空格。
+separator = {{comma}}
+route = route_text.{{delimiter}}(";", separator)
 clean = route.{{spaces}}(" ", "")
-aligned = panel.{{tab}}({{size}})
+# 设置制表位宽度，用来打印整齐的状态面板。
+width = {{size}}
+aligned = panel.{{tab}}(width)
 report = [("原始航线", route_text), ("清洗航线", clean),
           ("原始面板", repr(panel)), ("对齐面板", repr(aligned))]
 flight = [("move", point) for point in clean.split(",")]`,
@@ -185,7 +199,8 @@ flight = [("move", point) for point in clean.split(",")]`,
       point: raw.trim(),
       permitted: index !== 2,
     }),
-    code: `left = raw.{{left}}()
+    code: `# 分别清理左端、右端和两端，比较三次输出。
+left = raw.{{left}}()
 right = raw.{{right}}()
 point = raw.{{clean}}()
 permitted = point {{contains}} ("P1", "P2", "P3", "P4")
@@ -218,7 +233,8 @@ else:
       prefix_ok: index !== 2, suffix_ok: index !== 2, name_ok: true,
       digit: true, decimal: index !== 1, numeric: true,
     }),
-    code: `prefix_ok = mission.{{prefix}}("MIS-")
+    code: `# 每一项检查会得到 True 或 False。卫星数合格后才能换算高度。
+prefix_ok = mission.{{prefix}}("MIS-")
 suffix_ok = callsign.{{suffix}}("07")
 digit = sats.{{digit}}()
 decimal = sats.{{decimal}}()
@@ -254,7 +270,8 @@ else:
       mode: ["orbit", "figure8", "return"][index],
       alarm_name: ["Gps Lost", "Search Zone", "Low Battery"][index],
     }),
-    code: `callsign = uav.{{uav}}()
+    code: `# 统一呼号和动作口令的大小写，再按口令选择飞行动作。
+callsign = uav.{{uav}}()
 mode = mode_text.{{mode}}()
 alarm_name = alarm.{{title}}()
 pilot_name = pilot.{{pilot}}()
@@ -292,13 +309,18 @@ else:
       lower: ["method", "把返航备注统一为小写后再比较。"],
       contains: ["op", "判断备注是否包含返航口令。"],
     },
-    targets: (_, index) => ({
+    targets: (_, index, { raw }) => ({
+      lines: raw.split("\n"),
+      fields: raw.split("\n")[0].split("|"),
+      csv: raw.split("\n")[1].split(":")[1],
+      note: raw.split("\n")[3].toLowerCase(),
       mission: ["MIS-A03", "MIS-B09", "MIS-C12"][index], callsign: "UAV-07",
       points: [["P1", "P3"], ["P4", "P2"], ["P2", "P4"]][index],
       route: ["P1 → P3", "P4 → P2", "P2 → P4"][index],
       valid: true, return_now: index === 2,
     }),
-    code: `lines = raw.{{lines}}()
+    code: `# 先拆分日志，清洗字段和航点，再核验返航口令。
+lines = raw.{{lines}}()
 fields = lines[0].{{fields}}("|")
 mission, uav = [field.{{strip}}() for field in fields]
 callsign = uav.{{call}}()
@@ -308,7 +330,8 @@ route = " → ".{{join}}(points)
 mode = lines[2].partition(":")[2].strip().upper()
 loops = 0.5 if mode == "HALF" else 1
 valid = mission.{{starts}}("MIS-")
-return_now = "return-home" {{contains}} lines[3].{{lower}}()
+note = lines[3].{{lower}}()
+return_now = "return-home" {{contains}} note
 report = [("任务编号", mission), ("呼号", callsign), ("路线", route),
           ("搜索圈数", loops), ("返航指令", return_now)]
 if not valid:

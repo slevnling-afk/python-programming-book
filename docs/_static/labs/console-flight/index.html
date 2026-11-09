@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#eaf1ef">
   <meta name="description" content="填写 Python 输入与格式化代码，打印巡检简报并分阶段操控三维无人机。">
   <title>无人机任务口令台 · Python 输入与格式化</title>
-  <link rel="stylesheet" href="../string-flight/style.css">
+  <link rel="stylesheet" href="../string-flight/style.css?v=3">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,7 +22,6 @@
         <h1>无人机<span>任务口令台</span></h1>
         <p>把输入送进 Python。简报逐项通过后，右侧无人机会执行对应的动作。</p>
       </div>
-      <button type="button" class="primary demo" id="demo">▶ 动作演示 <small>预览模型与飞行</small></button>
     </section>
     <nav id="missions" class="missions" aria-label="选择关卡"></nav>
     <div class="lab">
@@ -53,8 +52,13 @@
         </div>
         <p class="run-note" id="note" role="status"></p>
       </section>
-      <section class="panel" aria-labelledby="flight-title">
+      <section class="panel flight-panel" aria-labelledby="flight-title">
         <div class="panel-bar"><span id="flight-title">02 / 模拟飞行</span><span id="mode">等待输入</span></div>
+        <div class="flight-link" id="flight-link" aria-live="polite">
+          <strong id="link-step">等待代码结果</strong>
+          <code id="link-value" hidden></code>
+          <p id="link-effect">填一空，观察实际值与这一步的飞行动作。</p>
+        </div>
         <div class="scene">
           <canvas id="aircraft" role="img" aria-label="三维无人机及飞行轨迹"></canvas>
           <div class="scene-label"><strong>训练空域</strong><span id="action">等待飞行指令</span></div>
@@ -75,7 +79,7 @@
               <option value=".5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option>
             </select></label>
             <button type="button" id="pause" disabled>暂停</button>
-            <button type="button" id="replay" disabled>重飞</button>
+            <button type="button" id="replay" disabled>重播动作</button>
           </div>
         </div>
         <ol class="flight-plan" id="plan" aria-label="动作顺序"></ol>
@@ -91,6 +95,6 @@
     </div>
     <footer>课堂仿真 · P1～P4 为四个固定航点。保留小数位只改变简报显示，飞行使用原始数值。</footer>
   </main>
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=3"></script>
 </body>
 </html>
