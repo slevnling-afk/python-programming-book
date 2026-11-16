@@ -1615,6 +1615,18 @@ print("update 后：", alarm_set)
   打印集合，观察是否去重。
   :::
 
+(dict-set-project-four-lab)=
+## 4.4.9 交互实训：无人机告警调度台
+
+:::{admonition} 填空试飞
+:class: tip
+
+按顺序补全字典和集合代码。观察缺失字段怎样触发备用高度、重复告警怎样影响扫描圈数，以及弹出的告警怎样选定下一站。可以切换情境，用同一份代码试飞。
+
+<p><strong><a href="../_static/labs/alarm-flight/index.html">进入无人机告警调度台 →</a></strong></p>
+
+:::
+
 # 4.5 项目五：无人机“飞行日志批处理器”——列表解析、迭代与应用
 
 **项目简介**

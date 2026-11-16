@@ -19,17 +19,22 @@ export function scenarioSetup(lesson, index) {
   return lesson.setup.replace(/@(\w+)/g, (_, key) => JSON.stringify(values[key]));
 }
 
-const pythonPrelude = `
-_waypoints = ${JSON.stringify(waypoints)}
+const defaultPrelude = `
 _steps = []
 _commands = []
+
+def hover():
+    _commands.append(["hold", 2])
+
+def fly(point):
+    fly_to(*_waypoints[point], point)
 
 def fly_to(x, y, point=""):
     _commands.append(["move", x, y, point])
 
 def follow(route):
     for point in route:
-        fly_to(*_waypoints[point], point)
+        fly(point)
 
 def climb(height):
     _commands.append(["altitude", height])
@@ -52,8 +57,8 @@ def _observe(passed, value):
 def _student():
     pass`;
 
-export function compileAttempt(setup, steps, replacements) {
-  const source = pythonPrelude.split("\n");
+export function compileAttempt(setup, steps, replacements, points = waypoints) {
+  const source = ("_waypoints = " + JSON.stringify(points) + defaultPrelude).split("\n");
   const lineMap = new Map();
   let visible = 0;
   const addRows = (code, value) => {

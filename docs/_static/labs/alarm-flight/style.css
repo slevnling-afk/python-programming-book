@@ -1,0 +1,54 @@
+:root {
+  --paper: #fff4e8;
+  --card: #fffdf7;
+  --line: #d9c0af;
+  --ink: #392723;
+  --muted: #65524c;
+  --dark: #29202a;
+  --orange: #ffcb72;
+  --accent: #994322;
+  --tint: #f4e8dc;
+}
+body { background: linear-gradient(180deg, #f5ebde, var(--paper) 20rem); }
+.mast > span, .eyebrow, h1 span, .panel-bar > :last-child { color: var(--accent); }
+.intro { padding-block: 16px; }
+.missions { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+.missions .mission { display: flex; align-items: center; justify-content: space-between; gap: .4rem; white-space: normal; }
+.missions .mission small { margin: 0; color: #4f6742; }
+.missions [aria-current="step"] small { color: #ffda93; }
+.panel { box-shadow: 0 7px 18px #54332110; }
+.panel-bar, .flight-link { background: var(--tint); }
+.flight-link[data-state="blocked"] { background: #f7e2db; }
+.flight-link[data-state="working"] { background: #fbefd4; }
+.code-header { background: #49313b; }
+.code { max-height: 437px; }
+.code input { width: 13ch; border-color: #efb17f; color: #ffe3ab; background: #3f303e; }
+.code input[data-kind="key"] { width: 19ch; }
+.code input[data-kind="name"] { width: 17ch; }
+.code input::placeholder { color: #e6bc9a; }
+.code-comment { color: #b7cbaa; }
+.code-line:focus-within { background: #493547; }
+.code-line.linked-line { background: #464139; box-shadow: inset 3px 0 #ffcb72; }
+.code-line.error-line { background: #673440; }
+.hint { background: #f9ecd3; }
+.primary { border-color: #a86826; }
+input[type="checkbox"] { accent-color: #ffcb72; }
+.scene { height: clamp(365px, 31vw, 440px); }
+.scene-label span { color: #ffdda5; }
+.axis-label { position: absolute; top: 13px; right: 13px; font: .72rem/1.6 var(--mono); color: #dbe8f6; pointer-events: none; }
+.flight-plan li { background: #f2ece5; border-color: #ddcabc; }
+.flight-plan [aria-current="step"] { background: #ffe0a9; border-color: #a16e39; }
+.results #output { background: var(--dark); color: #f6ede7; }
+#timeline { accent-color: #ad633c; }
+#timeline::-webkit-progress-value { background: #ad633c; }
+@media (min-width: 881px) {
+  .lab { grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); }
+}
+@media (max-width: 860px) {
+  .missions { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 490px) {
+  .scene { height: 310px; }
+  .axis-label { font-size: .65rem; }
+  .missions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
