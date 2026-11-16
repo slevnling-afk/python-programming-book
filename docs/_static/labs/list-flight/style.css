@@ -1,0 +1,55 @@
+:root {
+  --paper: #e8eef6;
+  --card: #fcfdff;
+  --line: #b9c9df;
+  --ink: #172d4d;
+  --muted: #40536c;
+  --dark: #11243d;
+  --orange: #b7e575;
+  --navy: #17365a;
+  --tint: #e3edf8;
+}
+body {
+  background: linear-gradient(#d9e6f5, var(--paper) 19rem);
+}
+.mast { border-color: #a8bfd8; }
+.mast > span { color: #2d4e76; }
+.eyebrow, h1 span, .panel-bar > :last-child { color: #254f80; }
+.intro { padding-block: 17px 15px; }
+.intro h1 { letter-spacing: -.045em; }
+.missions { grid-template-columns: repeat(7, minmax(100px, 1fr)); }
+.missions .mission { display: flex; gap: .35rem; align-items: center; justify-content: space-between; }
+.missions .mission small { margin: 0; color: #365e31; }
+.missions [aria-current="step"] small { color: #cff0a5; }
+.missions [aria-current="step"] { background: var(--navy); }
+.panel { box-shadow: 0 6px 16px #0d2e4510; }
+.panel-bar, .flight-link { background: var(--tint); }
+.code-header { background: #24486e; }
+.code { max-height: 410px; }
+.code input { width: 11ch; border-color: #abd786; color: #e4fbcb; background: #203d5a; }
+.code input::placeholder { color: #b9d5df; }
+.code-comment { color: #b1cfb5; }
+.code-line:focus-within { background: #294a67; }
+.code-line.linked-line { background: #214b4e; box-shadow: inset 3px 0 #c2e984; }
+.code-line.error-line { background: #66352f; }
+.hint { background: #eef5e6; }
+.primary { border-color: #669248; }
+input[type="checkbox"] { accent-color: #b7e575; }
+.scene { height: clamp(365px, 32vw, 435px); }
+.scene-label span { color: #e1f5bd; }
+.axis-label { position: absolute; top: 13px; right: 13px; font: .72rem/1.6 var(--mono); color: #dbe8f6; pointer-events: none; }
+.flight-plan li { background: #e9eef7; border-color: #c6d4e7; }
+.flight-plan [aria-current="step"] { background: #d6efad; border-color: #769b56; }
+.flight-tools [aria-pressed="true"] { background: #dbe8f6; border-color: #728daf; }
+.results #output { background: var(--dark); color: #e6eef7; }
+#timeline { accent-color: #537ba4; }
+#timeline::-webkit-progress-value { background: #537ba4; }
+button:hover:not(:disabled) { border-color: #5f7c9b; }
+:focus-visible { outline-color: #2d659d; }
+@media (min-width: 881px) {
+  .lab { grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); }
+}
+@media (max-width: 500px) {
+  .scene { height: 310px; }
+  .axis-label { font-size: .65rem; }
+}
