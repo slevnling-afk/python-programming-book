@@ -21,7 +21,7 @@
     <section class="intro">
       <div><h1>处理一批日志，<br class="mobile-break"><em>飞出一条航线。</em></h1>
       <p>在左侧补全 Python，右侧无人机按实际结果飞行。改变筛选阈值、航点或圈数，观察哪一步改变了航迹。</p></div>
-      <div class="intro-actions"><button type="button" id="showFlight" class="sample-button" disabled>▶ 先看组合试飞</button><span id="courseProgress"></span></div>
+      <span id="courseProgress"></span>
     </section>
     <nav class="mission-tabs" id="missions" aria-label="选择实训任务"></nav>
     <div class="workbench">
@@ -34,11 +34,10 @@
           <label id="scenarioWrap" hidden>情境 <select id="scenario"></select></label>
           <label><input id="auto" type="checkbox" checked> 自动试飞</label></div>
         <pre id="data" class="source-data" hidden></pre>
-        <div id="sampleNotice" class="sample-notice" hidden><span>参考试飞 · 当前显示参考草稿，通关进度不计入。</span><button type="button" id="exitSample" class="subtle-button">返回我的填空</button></div>
         <div class="editor-head"><span>log_batch.py</span><span id="blankProgress"></span></div>
         <div class="editor" id="editor" role="group" aria-label="Python 代码填空"></div>
         <div class="coach" id="coach" role="status"></div>
-        <div class="code-controls"><button id="run" class="primary-button">▶ 运行代码</button><button id="hint" class="subtle-button">提示</button><button id="reference" class="subtle-button">参考试飞</button><button id="reset" class="subtle-button reset-button">清空本关</button></div>
+        <div class="code-controls"><button id="run" class="primary-button" disabled>▶ 运行代码</button><button id="hint" class="subtle-button">提示</button><button id="reset" class="subtle-button reset-button">清空本关</button></div>
         <p class="keyboard-note">Tab 切换空格 · Ctrl / ⌘ + Enter 运行 · 未填空在预演中暂用参考值</p>
       </section>
       <section class="panel flight-panel" id="flightPanel" aria-labelledby="flightTitle">

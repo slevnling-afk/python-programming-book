@@ -9,7 +9,6 @@ try { saved = JSON.parse(localStorage.getItem(storageKey) || '{}') || {}; } catc
 const records = saved.records || {};
 let index = Math.max(0, lessons.findIndex(lesson => lesson.id === saved.current));
 let scenarioIndex = 0;
-let sample = null;
 let selected = null;
 let revision = 0;
 let timer;
@@ -17,7 +16,8 @@ let playable = false;
 let activeQueue = -1;
 const current = () => lessons[index];
 const record = () => records[current().id] ||= { values: {}, done: false };
-const answers = () => sample || record().values;
+const answers = () => record().values;
+const hasInput = () => current().blanks.some(blank => answers()[blank.id]?.trim());
 
 const scene = new FlightView($('canvas'), { onUpdate: updateFlight });
 
@@ -56,7 +56,7 @@ function updateProgress() {
   const done = lessons.filter(lesson => records[lesson.id]?.done).length;
   $('courseProgress').textContent = done + ' / ' + lessons.length + ' 关完成';
   const filled = current().blanks.filter(blank => answers()[blank.id]?.trim()).length;
-  $('blankProgress').textContent = filled + ' / ' + current().blanks.length + ' 空' + (sample ? ' · 草稿' : '');
+  $('blankProgress').textContent = filled + ' / ' + current().blanks.length + ' 空';
   Array.from($('missions').children).forEach((button, i) => {
     button.firstElementChild.textContent = String(i + 1).padStart(2, '0') + (records[lessons[i].id]?.done ? ' ✓' : '');
   });
@@ -115,10 +115,14 @@ function renderEditor() {
       input.onfocus = () => { selected = blank; };
       input.oninput = () => {
         answers()[blank.id] = input.value;
-        if (!sample) persist();
+        persist();
         styleBlank(input, blank);
         updateProgress();
         invalidate();
+        if (!hasInput()) {
+          say('请先填写至少一个空格。');
+          return;
+        }
         say($('auto').checked ? '已记录修改，正在准备预演。' : '已记录修改，点击“运行代码”查看飞行结果。');
         if ($('auto').checked) timer = setTimeout(() => execute(), 650);
       };
@@ -140,7 +144,7 @@ function getData() {
 function invalidate() {
   revision++;
   clearTimeout(timer);
-  $('run').disabled = false;
+  $('run').disabled = !hasInput();
   playable = false;
   scene.reset();
   renderQueue([]);
@@ -151,10 +155,9 @@ function invalidate() {
   $('editor').querySelectorAll('.error-line').forEach(line => line.classList.remove('error-line'));
 }
 
-function load(next, reference = false, dataSelection = 0) {
+function load(next) {
   index = next;
-  scenarioIndex = dataSelection;
-  sample = reference ? Object.fromEntries(current().blanks.map(blank => [blank.id, blank.answer])) : null;
+  scenarioIndex = 0;
   selected = null;
   invalidate();
   $('topic').textContent = current().topic;
@@ -163,14 +166,12 @@ function load(next, reference = false, dataSelection = 0) {
   $('challenge').textContent = current().challenge;
   $('concept').textContent = current().concept;
   $('data').textContent = getData();
-  $('sampleNotice').hidden = !sample;
   $('scenarioWrap').hidden = !current().scenarios?.length;
   $('scenario').replaceChildren(...(current().scenarios || []).map((scenario, i) => {
     const option = node('option', scenario.label);
     option.value = i;
     return option;
   }));
-  if (current().scenarios?.length) $('scenario').value = String(scenarioIndex);
   $('next').textContent = index < lessons.length - 1 ? '下一关 →' : '回到第一关 ↺';
   renderTabs();
   renderEditor();
@@ -178,7 +179,7 @@ function load(next, reference = false, dataSelection = 0) {
     const button = $('missions').children[index];
     $('missions').scrollLeft = Math.max(0, button.offsetLeft - $('missions').offsetLeft - 8);
   }
-  say('点击空格填写，或选择“参考试飞”先观察这一关。');
+  say('先填写一个空格。需要帮助时，可以点击“提示”。');
   persist();
 }
 
@@ -242,6 +243,10 @@ function renderValues(values) {
 
 async function execute({ jump = false } = {}) {
   invalidate();
+  if (!hasInput()) {
+    say('请先填写至少一个空格。');
+    return;
+  }
   const token = revision;
   const lesson = current();
   const empty = lesson.blanks.filter(blank => !answers()[blank.id]?.trim()).length;
@@ -278,7 +283,7 @@ async function execute({ jump = false } = {}) {
     return;
   }
   const commands = result.commands || [];
-  $('resultMode').textContent = sample ? '参考试飞' : empty ? '部分预演' : '实际运行';
+  $('resultMode').textContent = empty ? '部分预演' : '实际运行';
   try {
     playable = commands.length > 0;
     renderQueue(commands);
@@ -290,7 +295,7 @@ async function execute({ jump = false } = {}) {
     say('指令格式或范围需调整：' + error.message, true);
     return;
   }
-  if (!sample && matched) {
+  if (matched) {
     record().done = true;
     persist();
     updateProgress();
@@ -299,8 +304,7 @@ async function execute({ jump = false } = {}) {
     $('flightStatus').textContent = '无飞行动作';
     $('queueEmpty').textContent = '处理结果未生成飞行指令。试试调整条件或切换情境。';
   }
-  if (sample) say('参考草稿已运行。改一个空再比较，或点击“返回我的填空”开始闯关。');
-  else if (matched) say('本关完成。试试换一个情境或数值，预测它会怎样改变航迹。');
+  if (matched) say('本关完成。试试换一个情境或数值，预测它会怎样改变航迹。');
   else if (empty) say('预演已运行，剩余 ' + empty + ' 空暂用参考值。补齐后可完成本关。');
   else say('Python 已运行。可点一个待核对的空格，再按“提示”检查本关知识点。');
   if (jump && matchMedia('(max-width: 720px)').matches) $('flightPanel').scrollIntoView({ block: 'start' });
@@ -315,7 +319,8 @@ $('scenario').onchange = () => {
   scenarioIndex = Number($('scenario').value);
   $('data').textContent = getData();
   invalidate();
-  if ($('auto').checked) execute();
+  if (!hasInput()) say('情境已换好，填写一个空格后就可以预演。');
+  else if ($('auto').checked) execute();
   else say('情境已换好，运行同一段代码观察差异。');
 };
 $('auto').onchange = () => { clearTimeout(timer); };
@@ -325,15 +330,14 @@ $('hint').onclick = () => {
   say('第 ' + (current().blanks.findIndex(item => item.id === blank.id) + 1) + ' 空：' + blank.hint);
   $('editor').querySelector('[data-blank="' + blank.id + '"]')?.focus();
 };
-$('reference').onclick = () => { load(index, true, scenarioIndex); execute({ jump: true }); };
-$('exitSample').onclick = () => load(index, false, scenarioIndex);
 $('reset').onclick = () => {
-  if (sample) sample = {};
-  else { record().values = {}; record().done = false; persist(); }
+  record().values = {};
+  record().done = false;
+  persist();
   invalidate();
   selected = null;
   renderEditor();
-  say(sample ? '参考草稿已清空。原有填空仍可恢复。' : '本关填空已清空。');
+  say('本关填空已清空。');
 };
 $('pause').onclick = () => scene.setPaused($('pause').textContent === '暂停');
 $('replay').onclick = () => { if (playable) scene.replay(); };
@@ -341,11 +345,6 @@ $('rate').onchange = () => scene.setPlaybackRate(Number($('rate').value));
 $('camera').onclick = () => scene.resetCamera();
 $('topView').onclick = () => scene.topView();
 $('next').onclick = () => { load((index + 1) % lessons.length); $('missionTitle').scrollIntoView({ block: 'nearest' }); };
-$('showFlight').onclick = () => {
-  load(lessons.length - 1, true);
-  $('missionTitle').scrollIntoView({ block: 'nearest' });
-  execute({ jump: true });
-};
 document.addEventListener('keydown', event => {
   if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
     event.preventDefault();
@@ -355,5 +354,4 @@ document.addEventListener('keydown', event => {
 window.addEventListener('pagehide', event => { if (!event.persisted) scene.destroy(); });
 scene.setPlaybackRate(Number($('rate').value));
 load(index);
-$('showFlight').disabled = false;
 prewarmPython().catch(() => {});
