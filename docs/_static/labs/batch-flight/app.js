@@ -355,4 +355,5 @@ document.addEventListener('keydown', event => {
 window.addEventListener('pagehide', event => { if (!event.persisted) scene.destroy(); });
 scene.setPlaybackRate(Number($('rate').value));
 load(index);
+$('showFlight').disabled = false;
 prewarmPython().catch(() => {});
