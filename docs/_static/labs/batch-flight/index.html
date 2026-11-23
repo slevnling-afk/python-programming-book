@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17292d">
+  <meta name="description" content="模块四项目五交互实训。把飞行日志的迭代、推导、对齐、转换和筛选结果变成三维飞行动作。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Crect width='30' height='30' rx='6' fill='%2317292d'/%3E%3Cpath d='M5 22L25 8L20 23L14 17Z' fill='%23ffba62'/%3E%3C/svg%3E">
+  <title>无人机飞行日志批处理实验室</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="site-head">
+    <a class="brand" href="../../../chapters/04-Data%20type%20operations.html#batch-project-five-lab">
+      <span class="brand-mark" aria-hidden="true">↗</span><span>无人机飞行日志批处理实验室</span>
+    </a>
+    <span class="chapter">模块四 · 项目五</span>
+    <a class="return-link" href="../../../chapters/04-Data%20type%20operations.html#batch-project-five-lab">返回教材 ↗</a>
+  </header>
+  <main>
+    <section class="intro">
+      <div><h1>处理一批日志，<br class="mobile-break"><em>飞出一条航线。</em></h1>
+      <p>在左侧补全 Python，右侧无人机按实际结果飞行。改变筛选阈值、航点或圈数，观察哪一步改变了航迹。</p></div>
+      <div class="intro-actions"><button type="button" id="showFlight" class="sample-button">▶ 先看组合试飞</button><span id="courseProgress"></span></div>
+    </section>
+    <nav class="mission-tabs" id="missions" aria-label="选择实训任务"></nav>
+    <div class="workbench">
+      <section class="panel code-panel" aria-labelledby="missionTitle">
+        <div class="mission-summary">
+          <span class="topic" id="topic"></span><h2 id="missionTitle"></h2><p id="description"></p>
+          <p class="challenge" id="challenge"></p>
+        </div>
+        <div class="data-bar"><button class="subtle-button" id="toggleData" aria-expanded="false" aria-controls="data">▸ 查看原始日志</button>
+          <label id="scenarioWrap" hidden>情境 <select id="scenario"></select></label>
+          <label><input id="auto" type="checkbox" checked> 自动试飞</label></div>
+        <pre id="data" class="source-data" hidden></pre>
+        <div id="sampleNotice" class="sample-notice" hidden><span>参考试飞 · 当前显示参考草稿，通关进度不计入。</span><button type="button" id="exitSample" class="subtle-button">返回我的填空</button></div>
+        <div class="editor-head"><span>log_batch.py</span><span id="blankProgress"></span></div>
+        <div class="editor" id="editor" role="group" aria-label="Python 代码填空"></div>
+        <div class="coach" id="coach" role="status"></div>
+        <div class="code-controls"><button id="run" class="primary-button">▶ 运行代码</button><button id="hint" class="subtle-button">提示</button><button id="reference" class="subtle-button">参考试飞</button><button id="reset" class="subtle-button reset-button">清空本关</button></div>
+        <p class="keyboard-note">Tab 切换空格 · Ctrl / ⌘ + Enter 运行 · 未填空在预演中暂用参考值</p>
+      </section>
+      <section class="panel flight-panel" id="flightPanel" aria-labelledby="flightTitle">
+        <div class="flight-head"><h2 id="flightTitle">飞行回放</h2><span id="flightStatus">等待指令</span></div>
+        <div class="scene">
+          <canvas id="canvas" role="img" aria-label="三维无人机飞行模拟"></canvas>
+          <div class="scene-overlay"><strong>UAV-07</strong><span>虚拟训练场</span></div>
+          <div class="views"><button id="topView" title="从上方看航迹">俯视</button><button id="camera" title="恢复立体视角">立体</button></div>
+          <div class="scene-legend"><i></i> 已飞航迹 <i></i> 计划航线</div>
+        </div>
+        <div class="telemetry">
+          <div><span>X 坐标</span><strong id="x">0.0 <small>m</small></strong></div>
+          <div><span>Y 坐标</span><strong id="y">0.0 <small>m</small></strong></div>
+          <div><span>高度</span><strong id="z">10.0 <small>m</small></strong></div>
+          <div><span>航向</span><strong id="yaw">0 <small>°</small></strong></div>
+        </div>
+        <div class="playback">
+          <button type="button" id="pause" disabled>暂停</button><button type="button" id="replay" disabled>↻ 重播</button>
+          <label>速度 <select id="rate"><option value=".5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="3">3×</option></select></label>
+          <progress id="flightProgress" value="0" max="1" aria-label="飞行回放进度"></progress>
+        </div>
+        <div class="queue-section"><div class="result-title"><h3>飞行指令队列</h3><span id="queueCount">0 条</span></div><ol class="queue" id="queue"></ol><p class="empty" id="queueEmpty">填一个空，看看数据怎样生成飞行指令。</p></div>
+        <div class="results-section">
+          <div class="result-title"><h3>Python 处理结果</h3><span id="resultMode">待运行</span></div>
+          <dl class="values" id="values"></dl>
+          <pre class="output" id="output"># 原始日志和处理结果可逐项对照。</pre>
+        </div>
+      </section>
+    </div>
+    <div class="concept"><p id="concept"></p><button type="button" id="next" class="subtle-button">下一关 →</button></div>
+    <footer>飞行轨迹用于演示数据处理结果。模型从原点上方 10 m 开始，每次运行重新回放。</footer>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
