@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#201718">
+  <meta name="description" content="练习日志转码、文件指针与二进制备份，用真实 Python 恢复三维无人机航线。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23342123'/%3E%3Cpath d='M6 23L25 7L20 24L14 18Z' fill='%23ffab6c'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css">
+  <title>无人机黑匣子备份实验室</title>
+</head>
+<body>
+  <header class="site-head">
+    <a class="brand" href="../../../chapters/05-File%20Operations.html#file-project-two-lab">
+      <span class="brand-mark" aria-hidden="true">↗</span><span>无人机黑匣子备份实验室</span>
+    </a>
+    <span class="chapter">模块五 · 项目二</span>
+    <a class="return-link" href="../../../chapters/05-File%20Operations.html#file-project-two-lab">返回教材 ↗</a>
+  </header>
+  <main>
+    <section class="intro">
+      <div><h1>备份飞行记录，<em>从字节找回航线。</em></h1>
+      <p>左侧填代码，观察日志转码、指针跳转和黑匣子恢复。右侧无人机按 Python 实际写入、读回或验证的数据飞行。</p></div>
+      <span id="courseProgress"></span>
+    </section>
+    <nav class="mission-tabs" id="missions" aria-label="选择实训任务"></nav>
+    <div class="workbench">
+      <section class="panel code-panel" aria-labelledby="missionTitle">
+        <div class="mission-summary">
+          <span class="topic" id="topic"></span><h2 id="missionTitle"></h2><p id="description"></p>
+          <p class="challenge" id="challenge"></p>
+        </div>
+        <div class="data-bar">
+          <button class="subtle-button" id="toggleData" aria-expanded="true" aria-controls="logDock">▾ 收起文件检视</button>
+          <label id="scenarioWrap" hidden>情境 <select id="scenario"></select></label>
+          <label><input id="auto" type="checkbox" checked> 自动预演</label>
+        </div>
+        <section class="log-dock" id="logDock" aria-label="虚拟文件检视">
+          <div class="log-head">
+            <strong>文件检视</strong>
+            <div id="fileVersions" role="group" aria-label="比较运行前后的文件">
+              <button id="beforeFiles" type="button" aria-pressed="true">运行前</button>
+              <button id="afterFiles" type="button" aria-pressed="false" disabled>运行后</button>
+            </div>
+            <code>/flight-lab</code>
+          </div>
+          <div id="files" role="group" aria-label="选择日志文件"></div>
+          <div id="dataTools" class="data-tools" hidden>
+            <div class="data-view" role="group" aria-label="文件显示方式">
+              <button id="hexView" type="button" aria-pressed="true">十六进制</button>
+              <button id="textView" type="button" aria-pressed="false">文本</button>
+              <label id="codecLabel" hidden>解码 <select id="codec"><option value="utf-8">UTF-8</option><option value="utf-8-sig">UTF-8-SIG</option><option value="gbk">GBK</option></select></label>
+            </div>
+            <span id="fileSize"></span>
+          </div>
+          <div class="bytes-grid" id="bytesGrid" role="region" aria-label="文件字节和偏移"></div>
+          <pre id="data" class="source-data" hidden></pre>
+          <p id="cursorNote" class="cursor-note" hidden></p>
+        </section>
+        <div class="editor-head"><span>uav_codec_blackbox.py</span><span id="blankProgress"></span></div>
+        <div class="editor" id="editor" role="group" aria-label="Python 代码填空"></div>
+        <div class="coach" id="coach" role="status"></div>
+        <div class="code-controls"><button id="run" class="primary-button" disabled>▶ 运行已完成的代码</button><button id="hint" class="subtle-button">提示</button><button id="reset" class="subtle-button reset-button">清空本关</button></div>
+        <p class="keyboard-note">Tab 切换空格 · Ctrl / ⌘ + Enter 运行 · 从上往下完成各段</p>
+      </section>
+      <section class="panel flight-panel" id="flightPanel" aria-labelledby="flightTitle">
+        <div class="flight-head"><h2 id="flightTitle">飞行回放</h2><span id="flightStatus">等待指令</span></div>
+        <div class="scene">
+          <canvas id="canvas" role="img" aria-label="三维无人机飞行模拟"></canvas>
+          <div class="scene-overlay"><strong>UAV-07</strong></div>
+          <div class="views"><button id="topView" type="button" aria-pressed="false">俯视</button><button id="camera" type="button" aria-pressed="true">立体</button></div>
+          <div class="scene-legend"><i></i> 已飞航迹 <i></i> 计划航线</div>
+        </div>
+        <div class="telemetry">
+          <div><span>X 坐标</span><strong id="x">0.0 <small>m</small></strong></div>
+          <div><span>Y 坐标</span><strong id="y">0.0 <small>m</small></strong></div>
+          <div><span>高度</span><strong id="z">10.0 <small>m</small></strong></div>
+          <div><span>航向</span><strong id="yaw">0 <small>°</small></strong></div>
+        </div>
+        <div class="playback">
+          <button type="button" id="pause" disabled>暂停</button><button type="button" id="replay" disabled>↻ 重播</button>
+          <label>速度 <select id="rate"><option value=".5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="3">3×</option></select></label>
+          <progress id="flightProgress" value="0" max="1" aria-label="飞行回放进度"></progress>
+        </div>
+        <div class="queue-section">
+          <div class="result-title"><h3>飞行指令队列</h3><span id="queueCount">0 条</span></div>
+          <ol class="queue" id="queue"></ol><p class="empty" id="queueEmpty">完成第一段代码后，观察日志生成的指令。</p>
+        </div>
+        <div class="results-section">
+          <div class="result-title"><h3>Python 运行结果</h3><span id="resultMode">待运行</span></div>
+          <ol id="fileEvents" class="file-events" aria-label="文件操作记录"></ol>
+          <dl class="values" id="values"></dl>
+          <pre class="output" id="output"># 日志转码、指针和备份验证结果将在这里显示。</pre>
+        </div>
+      </section>
+    </div>
+    <div class="concept"><p id="concept"></p><button type="button" id="next" class="subtle-button">下一关 →</button></div>
+    <footer>文件位于浏览器虚拟目录。每次运行从本关原始文件开始，可对比运行前后的内容。</footer>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

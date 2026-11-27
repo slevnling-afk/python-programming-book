@@ -93,6 +93,7 @@ import math as _math
 import os as _os
 import reprlib as _reprlib
 import shutil as _shutil
+import stat as _stat
 import sys as _sys
 import time as _time
 import traceback as _traceback
@@ -182,6 +183,45 @@ def _mount_fixtures(fixture_json):
         with _OPEN(name, 'wb') as handle:
             handle.write(data)
 
+def _snapshot_files():
+    # Capture only regular workspace files, even if the user created links.
+    # A bounded walk and small prefixes keep the snapshot cheap.
+    snapshots = {}
+    try:
+        if not _stat.S_ISDIR(_os.lstat(_ROOT).st_mode):
+            return snapshots
+    except OSError:
+        return snapshots
+
+    directories = [_ROOT]
+    visited = 0
+    while directories and visited < 256 and len(snapshots) < 24:
+        try:
+            with _os.scandir(directories.pop()) as children:
+                for child in children:
+                    visited += 1
+                    if visited > 256 or len(snapshots) >= 24:
+                        break
+                    relative = child.path[len(_ROOT) + 1:]
+                    if len(relative) > 160:
+                        continue
+                    try:
+                        state = child.stat(follow_symlinks=False)
+                        if _stat.S_ISDIR(state.st_mode):
+                            directories.append(child.path)
+                        elif _stat.S_ISREG(state.st_mode):
+                            with _OPEN(child.path, 'rb') as handle:
+                                raw = handle.read(256)
+                            snapshots[relative] = {
+                                'bytes': list(raw), 'size': state.st_size,
+                                'truncated': state.st_size > len(raw),
+                            }
+                    except OSError:
+                        continue
+        except OSError:
+            continue
+    return snapshots
+
 def _caller_line():
     frame = _sys._getframe(1)
     while frame is not None:
@@ -193,11 +233,12 @@ def _caller_line():
 class _TrackedFile:
     """Delegate to a real Python file while recording the operations used in the lab."""
 
-    def __init__(self, handle, path, emit):
+    def __init__(self, handle, path, emit, report_tell):
         self._handle = handle
         self._path = path
         self._mode = handle.mode
         self._emit = emit
+        self._report_tell = report_tell
 
     def __getattr__(self, name):
         return getattr(self._handle, name)
@@ -254,6 +295,11 @@ class _TrackedFile:
     def seek(self, *args, **kwargs):
         return self._do('seek', *args, **kwargs)
 
+    def tell(self):
+        if self._report_tell:
+            return self._do('tell')
+        return self._handle.tell()
+
     def close(self):
         if not self._handle.closed:
             before = self._position()
@@ -277,7 +323,7 @@ class _TrackedFile:
     def __next__(self):
         return self._do('iterate')
 
-def _run(source, names_json, fixture_json):
+def _run(source, names_json, fixture_json, capture_files=False):
     file_events = []
     handles = []
 
@@ -299,7 +345,7 @@ def _run(source, names_json, fixture_json):
         except Exception as error:
             emit('open', name, str(mode), error=type(error).__name__)
             raise
-        tracked = _TrackedFile(handle, name, emit)
+        tracked = _TrackedFile(handle, name, emit, capture_files)
         handles.append(tracked)
         emit('open', name, mode, after=tracked._position())
         return tracked
@@ -353,7 +399,11 @@ def _run(source, names_json, fixture_json):
                     emit('cleanup', tracked._path, tracked._mode)
                 except OSError:
                     pass
-        _clear_workspace()
+        try:
+            if capture_files:
+                result['fileSnapshots'] = _snapshot_files()
+        finally:
+            _clear_workspace()
     result['output'] = output.text()
     return _json.dumps(result, ensure_ascii=False, allow_nan=False)
 
@@ -372,6 +422,7 @@ self.onmessage = async ({ data }) => {
     return;
   }
   if (data.kind !== 'run') return;
+  const captureFiles = data.captureFiles === true;
   let result;
   try {
     const run = await boot;
@@ -383,16 +434,18 @@ self.onmessage = async ({ data }) => {
         kind: 'result', id: data.id, result: {
           ok: false, output: '', commands: [], values: {}, fileEvents: [], line: null,
           errorType: 'ValueError', error: error.message,
+          ...(captureFiles ? { fileSnapshots: {} } : {}),
         },
       });
       return;
     }
-    const json = run(String(data.source), JSON.stringify(data.watch), files);
+    const json = run(String(data.source), JSON.stringify(data.watch), files, captureFiles);
     result = JSON.parse(json);
   } catch (error) {
     result = {
       ok: false, output: '', commands: [], values: {}, fileEvents: [], line: null,
       errorType: 'RuntimeError', error: 'Python 运行环境发生错误。' + String(error?.message || error).slice(0, 500),
+      ...(captureFiles ? { fileSnapshots: {} } : {}),
     };
   }
   self.postMessage({ kind: 'result', id: data.id, result });

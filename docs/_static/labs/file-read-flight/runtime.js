@@ -15,7 +15,7 @@ function finish(job, result) {
   if (currentJob !== job) return;
   currentJob = null;
   clearTimeout(job.timer);
-  job.resolve(result);
+  job.resolve(job.captureFiles && !result.fileSnapshots ? { ...result, fileSnapshots: {} } : result);
 }
 
 function dispose(state, result) {
@@ -83,22 +83,24 @@ export function cancelPython() {
   else finish(job, result);
 }
 
-export function runPython(source, watch = [], { files = {}, onStatus } = {}) {
+export function runPython(source, watch = [], { files = {}, captureFiles = false, onStatus } = {}) {
   cancelPython();
+  const snapshot = captureFiles === true;
+  const rejected = (type, message) => Promise.resolve(failure(type, message, snapshot ? { fileSnapshots: {} } : {}));
   if (typeof Worker !== 'function') {
-    return Promise.resolve(failure('BrowserError', '当前浏览器不支持 Web Worker，请使用新版 Edge 或 Chrome。'));
+    return rejected('BrowserError', '当前浏览器不支持 Web Worker，请使用新版 Edge 或 Chrome。');
   }
   const code = String(source ?? '');
-  if (code.length > 60000) return Promise.resolve(failure('ValueError', '代码超过 60,000 字符，请缩短后再运行。'));
+  if (code.length > 60000) return rejected('ValueError', '代码超过 60,000 字符，请缩短后再运行。');
   const names = Array.isArray(watch) ? watch.filter(name => typeof name === 'string' && /^[A-Za-z_]\w{0,79}$/.test(name)).slice(0, 30) : [];
   let state;
   try {
     state = getWorker();
   } catch {
-    return Promise.resolve(failure('WorkerError', '无法启动 Python 环境，请通过教材站点打开实验室。'));
+    return rejected('WorkerError', '无法启动 Python 环境，请通过教材站点打开实验室。');
   }
   return new Promise(resolve => {
-    const job = { id: ++nextId, state, resolve, started: false, timer: null };
+    const job = { id: ++nextId, state, resolve, captureFiles: snapshot, started: false, timer: null };
     currentJob = job;
     if (!state.ready) notify(onStatus, 'loading', '首次加载 Python 需要等待几秒，之后可以连续试飞。');
     void state.readyPromise.then(ready => {
@@ -112,7 +114,7 @@ export function runPython(source, watch = [], { files = {}, onStatus } = {}) {
       notify(onStatus, 'running', '正在运行当前 Python 代码。');
       if (currentJob !== job) return;
       try {
-        state.worker.postMessage({ kind: 'run', id: job.id, source: code, watch: names, files });
+        state.worker.postMessage({ kind: 'run', id: job.id, source: code, watch: names, files, captureFiles: snapshot });
       } catch {
         dispose(state, failure('WorkerError', '未能发送 Python 代码，请重试。'));
       }
